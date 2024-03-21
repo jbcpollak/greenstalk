@@ -11,9 +11,7 @@
 				"EditorConfig.EditorConfig"
 			]
 		}
-	},
-
-	"mounts": ["type=bind,source=/dev/bus/usb,target=/dev/bus/usb"]
+	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
