@@ -2,6 +2,7 @@ package decorator
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jbcpollak/greenstalk/core"
@@ -10,14 +11,20 @@ import (
 // Delayer ...
 func Delayer[Blackboard any](params core.Params, child core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewDecorator("Delayer", params, child)
-	d := &delayer[Blackboard]{Decorator: base}
 
-	delay, err := params.GetInt("delay")
+	v, err := params.Get("delay")
 	if err != nil {
 		panic(err)
 	}
+	delay, ok := v.(time.Duration)
+	if !ok {
+		panic(fmt.Errorf("delay must be a time.Duration"))
+	}
 
-	d.delay = time.Duration(delay)
+	d := &delayer[Blackboard]{
+		Decorator: base,
+		delay:     delay,
+	}
 	return d
 }
 

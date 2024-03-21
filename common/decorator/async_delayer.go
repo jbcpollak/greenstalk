@@ -30,7 +30,7 @@ func AsyncDelayer[Blackboard any](params core.Params, child core.Node[Blackboard
 
 	d := &asyncdelayer[Blackboard]{
 		Decorator: base,
-		delay:     time.Duration(delay),
+		delay:     delay,
 	}
 	return d
 }

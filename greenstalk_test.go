@@ -17,19 +17,6 @@ import (
 	. "github.com/jbcpollak/greenstalk/common/decorator"
 )
 
-// var delayingRoot = Repeater(core.Params{"n": 2},
-// 	PersistentSequence(
-// 		Delayer(core.Params{"ms": 700},
-// 			Succeed(nil, nil),
-// 		),
-// 		Delayer(core.Params{"ms": 400},
-// 			Inverter(nil,
-// 				Fail(nil, nil),
-// 			),
-// 		),
-// 	),
-// )
-
 type TestBlackboard struct {
 	id    int
 	count uint
