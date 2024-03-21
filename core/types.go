@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -34,7 +35,8 @@ const (
 
 func (s Status) Status() Status { return s }
 
-type NodeAsyncRunning func(enqueue func(Event) error) error
+type EnqueueFn func(Event) error
+type NodeAsyncRunning func(ctx context.Context, enqueue EnqueueFn) error
 
 func (NodeAsyncRunning) Status() Status { return StatusRunning }
 
@@ -52,6 +54,14 @@ type (
 	// Returns is just a type alias for Params.
 	Returns = Params
 )
+
+func (p Params) Get(key string) (any, error) {
+	val, ok := p[key]
+	if !ok {
+		return 0, ErrParamNotFound(key)
+	}
+	return val, nil
+}
 
 func (p Params) GetInt(key string) (int, error) {
 	val, ok := p[key]

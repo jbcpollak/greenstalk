@@ -1,6 +1,8 @@
 package decorator
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/jbcpollak/greenstalk/core"
@@ -9,14 +11,20 @@ import (
 // Delayer ...
 func Delayer[Blackboard any](params core.Params, child core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewDecorator("Delayer", params, child)
-	d := &delayer[Blackboard]{Decorator: base}
 
-	ms, err := params.GetInt("ms")
+	v, err := params.Get("delay")
 	if err != nil {
 		panic(err)
 	}
+	delay, ok := v.(time.Duration)
+	if !ok {
+		panic(fmt.Errorf("delay must be a time.Duration"))
+	}
 
-	d.delay = time.Duration(ms) * time.Millisecond
+	d := &delayer[Blackboard]{
+		Decorator: base,
+		delay:     delay,
+	}
 	return d
 }
 
@@ -33,9 +41,9 @@ func (d *delayer[Blackboard]) Enter(bb Blackboard) {
 }
 
 // Tick ...
-func (d *delayer[Blackboard]) Tick(bb Blackboard, evt core.Event) core.NodeResult {
+func (d *delayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	if time.Since(d.start) > d.delay {
-		return core.Update(d.Child, bb, evt)
+		return core.Update(ctx, d.Child, bb, evt)
 	}
 	return core.StatusRunning
 }

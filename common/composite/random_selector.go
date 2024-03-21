@@ -1,8 +1,8 @@
 package composite
 
 import (
+	"context"
 	"math/rand"
-	"time"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
@@ -22,11 +22,10 @@ type randomSelector[Blackboard any] struct {
 func (s *randomSelector[Blackboard]) Enter(bb Blackboard) {}
 
 // Tick ...
-func (s *randomSelector[Blackboard]) Tick(bb Blackboard, evt core.Event) core.NodeResult {
-	rand.Seed(time.Now().UnixNano())
+func (s *randomSelector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	index := rand.Intn(len(s.Children))
 	child := s.Children[index]
-	return core.Update(child, bb, evt)
+	return core.Update(ctx, child, bb, evt)
 }
 
 // Leave ...

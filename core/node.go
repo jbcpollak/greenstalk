@@ -1,6 +1,23 @@
 package core
 
-type Event any
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
+
+type Event interface {
+	// UUID of the node that generated the event
+	// Use uuid.Nil for events that are applicable to many nodes
+	TargetNodeId() uuid.UUID
+}
+
+type DefaultEvent struct {
+}
+
+func (e DefaultEvent) TargetNodeId() uuid.UUID {
+	return uuid.Nil
+}
 
 // Preliminary interface to work around intermediate types like
 // composite, decorator, etc not inplementing Enter/Tick/Leave
@@ -9,6 +26,7 @@ type Walkable[Blackboard any] interface {
 	// Composite, Decorator or Leaf node in the custom node.
 	Status() Status
 	SetStatus(Status)
+	Id() uuid.UUID
 	Category() Category
 	String() string
 
@@ -23,20 +41,31 @@ type Node[Blackboard any] interface {
 
 	// Must be implemented by the custom node.
 	Enter(Blackboard)
-	Tick(Blackboard, Event) NodeResult
+	Tick(context.Context, Blackboard, Event) NodeResult
 	Leave(Blackboard)
 }
 
 // BaseNode contains properties shared by all categories of node.
 // Do not use this type directly.
 type BaseNode struct {
+	id       uuid.UUID
 	category Category
 	name     string
 	status   Status
 }
 
 func newBaseNode(category Category, name string) BaseNode {
-	return BaseNode{category: category, name: name}
+	return BaseNode{id: uuid.New(), category: category, name: name}
+}
+
+// Status returns the status of this node.
+func (n *BaseNode) Id() uuid.UUID {
+	return n.id
+}
+
+// Status returns the status of this node.
+func (n *BaseNode) Name() string {
+	return n.name
 }
 
 // Status returns the status of this node.

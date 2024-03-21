@@ -1,6 +1,8 @@
 package decorator
 
 import (
+	"context"
+
 	"github.com/jbcpollak/greenstalk/core"
 )
 
@@ -16,8 +18,8 @@ type untilSuccess[Blackboard any] struct {
 
 func (d *untilSuccess[Blackboard]) Enter(bb Blackboard) {}
 
-func (d *untilSuccess[Blackboard]) Tick(bb Blackboard, evt core.Event) core.NodeResult {
-	status := core.Update(d.Child, bb, evt)
+func (d *untilSuccess[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	status := core.Update(ctx, d.Child, bb, evt)
 	if status == core.StatusSuccess {
 		return core.StatusSuccess
 	}
