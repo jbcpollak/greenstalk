@@ -30,7 +30,7 @@ func AsyncDelayer[Blackboard any](params core.Params, child core.Node[Blackboard
 
 	d := &asyncdelayer[Blackboard]{
 		Decorator: base,
-		delay: time.Duration(delay),
+		delay:     time.Duration(delay),
 	}
 	return d
 }
@@ -73,13 +73,13 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 }
 
 // Tick ...
-func (d *asyncdelayer[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Event) core.NodeResult {
+func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	log.Info().Msgf("%s: Tick", d.Name())
 
 	if dfe, ok := evt.(DelayerFinishedEvent); ok {
 		if dfe.TargetNodeId() == d.Id() {
 			log.Info().Msgf("%s: DelayerFinishedEvent", d.Name())
-			return core.Update(d.Child, bb, ctx, evt)
+			return core.Update(ctx, d.Child, bb, evt)
 		}
 	}
 

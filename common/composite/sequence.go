@@ -22,9 +22,9 @@ func (s *sequence[Blackboard]) Enter(bb Blackboard) {
 	s.Composite.CurrentChild = 0
 }
 
-func (s *sequence[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Event) core.NodeResult {
+func (s *sequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	for s.CurrentChild < len(s.Children) {
-		status := core.Update(s.Children[s.CurrentChild], bb, ctx, evt)
+		status := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
 		if status != core.StatusSuccess {
 			return status
 		}

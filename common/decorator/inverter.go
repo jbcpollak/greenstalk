@@ -21,8 +21,8 @@ type inverter[Blackboard any] struct {
 func (d *inverter[Blackboard]) Enter(bb Blackboard) {}
 
 // Tick ...
-func (d *inverter[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Event) core.NodeResult {
-	switch core.Update(d.Child, bb, ctx, evt) {
+func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	switch core.Update(ctx, d.Child, bb, evt) {
 	case core.StatusSuccess:
 		return core.StatusFailure
 	case core.StatusFailure:

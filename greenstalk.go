@@ -39,7 +39,7 @@ func NewBehaviorTree[Blackboard any](ctx context.Context, root core.Node[Blackbo
 
 // Update propagates an update call down the behavior tree.
 func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
-	result := core.Update(bt.Root, bt.Blackboard, bt.ctx, evt)
+	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
 
 	status := result.Status()
 	switch status {

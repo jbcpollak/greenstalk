@@ -41,7 +41,7 @@ type Node[Blackboard any] interface {
 
 	// Must be implemented by the custom node.
 	Enter(Blackboard)
-	Tick(Blackboard, context.Context, Event) NodeResult
+	Tick(context.Context, Blackboard, Event) NodeResult
 	Leave(Blackboard)
 }
 

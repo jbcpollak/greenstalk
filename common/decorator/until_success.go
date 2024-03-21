@@ -18,8 +18,8 @@ type untilSuccess[Blackboard any] struct {
 
 func (d *untilSuccess[Blackboard]) Enter(bb Blackboard) {}
 
-func (d *untilSuccess[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Event) core.NodeResult {
-	status := core.Update(d.Child, bb, ctx, evt)
+func (d *untilSuccess[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	status := core.Update(ctx, d.Child, bb, evt)
 	if status == core.StatusSuccess {
 		return core.StatusSuccess
 	}

@@ -32,9 +32,9 @@ func (d *repeater[Blackboard]) Enter(bb Blackboard) {
 	d.i = 0
 }
 
-func (d *repeater[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Event) core.NodeResult {
+func (d *repeater[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	log.Info().Msg("Repeater: Calling child")
-	status := core.Update(d.Child, bb, ctx, evt)
+	status := core.Update(ctx, d.Child, bb, evt)
 
 	if status == core.StatusRunning {
 		return core.StatusRunning

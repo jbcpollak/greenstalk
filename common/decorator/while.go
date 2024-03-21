@@ -43,10 +43,10 @@ func (d *while[Blackboard]) Enter(bb Blackboard) {
 
 }
 
-func (d *while[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Event) core.NodeResult {
+func (d *while[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 
 	// check the condition
-	status := core.Update(d.Child, bb, ctx, evt)
+	status := core.Update(ctx, d.Child, bb, evt)
 
 	switch status {
 	case core.StatusRunning:
@@ -58,7 +58,7 @@ func (d *while[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Ev
 	}
 
 	// here condition is successful
-	actionStatus := core.Update(d.action, bb, ctx, evt)
+	actionStatus := core.Update(ctx, d.action, bb, evt)
 
 	return actionStatus
 

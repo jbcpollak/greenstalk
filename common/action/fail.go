@@ -21,7 +21,7 @@ type fail[Blackboard any] struct {
 func (a *fail[Blackboard]) Enter(bb Blackboard) {}
 
 // Tick ...
-func (a *fail[Blackboard]) Tick(bb Blackboard, ctx context.Context, evt core.Event) core.NodeResult {
+func (a *fail[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	return core.StatusFailure
 }
 

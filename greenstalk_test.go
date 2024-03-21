@@ -57,7 +57,7 @@ func (a *counter) Enter(bb TestBlackboard) {}
 // Tick ...
 var countChan = make(chan uint, 0)
 
-func (a *counter) Tick(bb TestBlackboard, ctx context.Context, evt core.Event) core.NodeResult {
+func (a *counter) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) core.NodeResult {
 	log.Info().Msgf("%s: Incrementing count", a.Name())
 	bb.count++
 	countChan <- bb.count
