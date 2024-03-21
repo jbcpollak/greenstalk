@@ -61,10 +61,10 @@ func (e DelayerFinishedEvent) TargetNodeId() uuid.UUID {
 
 func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.EnqueueFn) error {
 	t := time.NewTimer(d.delay)
+	defer t.Stop()
 	select {
 	case <-ctx.Done():
-		t.Stop()
-		return fmt.Errorf("Interrupted")
+		return fmt.Errorf("async delay interrupted: %w", ctx.Err())
 	case <-t.C:
 		log.Info().Msgf("Delayed: %v", time.Since(d.start))
 		return enqueue(DelayerFinishedEvent{d.Id(), d.start})

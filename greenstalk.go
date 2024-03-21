@@ -18,8 +18,6 @@ type BehaviorTree[Blackboard any] struct {
 	events     chan core.Event
 }
 
-// NewBehaviorTree returns a new BehaviorTree. A data Blackboard
-// to be propagated down the tree each tick is created.
 func NewBehaviorTree[Blackboard any](ctx context.Context, root core.Node[Blackboard], bb Blackboard) (*BehaviorTree[Blackboard], error) {
 	var eb internal.ErrorBuilder
 	eb.SetMessage("NewBehaviorTree")
