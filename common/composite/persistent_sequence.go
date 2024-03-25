@@ -10,7 +10,7 @@ import (
 // returns Failure or Running, this node returns the same value,
 // and resumes execution from the same child node the next tick.
 func PersistentSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite("PersistentSequence", children)
+	base := core.NewComposite(core.BaseParams("PersistentSequence"), children)
 	return &persistentSequence[Blackboard]{Composite: base}
 }
 

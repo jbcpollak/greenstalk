@@ -10,7 +10,7 @@ import (
 // RandomSequence works just like Sequence, except it shuffles
 // the order of its children every time it is re-updated.
 func RandomSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite("RandomSequence", children)
+	base := core.NewComposite(core.BaseParams("RandomSequence"), children)
 	return &randomSequence[Blackboard]{Composite: base}
 }
 

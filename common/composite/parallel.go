@@ -13,7 +13,7 @@ import (
 // succeed/fail for the parallel sequence node itself to succeed/fail.
 // A value of 0 for either node means that all nodes must succeed/fail.
 func Parallel[Blackboard any](succReq, failReq int, children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite("Parallel", children)
+	base := core.NewComposite(core.BaseParams("Parallel"), children)
 	if succReq == 0 {
 		succReq = len(children)
 	}

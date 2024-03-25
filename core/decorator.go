@@ -4,6 +4,10 @@ import (
 	"fmt"
 )
 
+type DecoratorParams struct {
+	BaseParams
+}
+
 // Decorator is the base type for any specific decorator node. Such a node
 // may be domain-specific, but usually one of the common nodes will be used,
 // such as Inverter or Repeater. Each decorator node has Params: a key-value
@@ -13,13 +17,13 @@ import (
 type Decorator[Blackboard any] struct {
 	BaseNode
 	Child  Node[Blackboard]
-	Params Params
+	Params DecoratorParams
 }
 
 // NewDecorator creates a new decorator base node.
-func NewDecorator[Blackboard any](name string, params Params, child Node[Blackboard]) Decorator[Blackboard] {
+func NewDecorator[Blackboard any](params DecoratorParams, child Node[Blackboard]) Decorator[Blackboard] {
 	return Decorator[Blackboard]{
-		BaseNode: newBaseNode(CategoryDecorator, name),
+		BaseNode: newBaseNode(CategoryDecorator, params),
 		Child:    child,
 		Params:   params, // TODO (remove): This is only used for String()
 	}

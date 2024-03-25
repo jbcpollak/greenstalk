@@ -7,8 +7,8 @@ import (
 )
 
 // UntilFailure updates its child until it returns Failure.
-func UntilFailure[Blackboard any](params core.Params, child core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewDecorator[Blackboard]("UntilFailure", params, child)
+func UntilFailure[Blackboard any](params core.DecoratorParams, child core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewDecorator[Blackboard](core.DecoratorParams{BaseParams: "UntilFailure"}, child)
 	return &untilFailure[Blackboard]{Decorator: base}
 }
 

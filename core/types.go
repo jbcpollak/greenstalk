@@ -47,15 +47,30 @@ type NodeRuntimeError struct {
 func (n NodeRuntimeError) Status() Status { return StatusError }
 func (n NodeRuntimeError) String() string { return n.Err.Error() }
 
+type BaseParams string
+
+func (b BaseParams) Name() string {
+	return string(b)
+}
+
+type EmptyReturns struct {
+}
+
 type (
 	// Params denotes a list of parameters to a node.
-	Params map[string]interface{}
+	// Obsolete, do not use on new nodes
+	DefaultParams map[string]interface{}
 
 	// Returns is just a type alias for Params.
-	Returns = Params
+	// Obsolete, do not use on new nodes
+	Returns = DefaultParams
 )
 
-func (p Params) Get(key string) (any, error) {
+func (p DefaultParams) Name() (string, error) {
+	return p.GetString("name")
+}
+
+func (p DefaultParams) Get(key string) (any, error) {
 	val, ok := p[key]
 	if !ok {
 		return 0, ErrParamNotFound(key)
@@ -63,7 +78,7 @@ func (p Params) Get(key string) (any, error) {
 	return val, nil
 }
 
-func (p Params) GetInt(key string) (int, error) {
+func (p DefaultParams) GetInt(key string) (int, error) {
 	val, ok := p[key]
 	if !ok {
 		return 0, ErrParamNotFound(key)
@@ -75,7 +90,7 @@ func (p Params) GetInt(key string) (int, error) {
 	return n, nil
 }
 
-func (p Params) GetString(key string) (string, error) {
+func (p DefaultParams) GetString(key string) (string, error) {
 	val, ok := p[key]
 	if !ok {
 		return "", ErrParamNotFound(key)
