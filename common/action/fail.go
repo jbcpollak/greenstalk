@@ -6,15 +6,25 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
+type FailParams struct {
+	core.BaseParams
+}
+
+func (p FailParams) Name() string {
+	return "Fail" + p.BaseParams.Name()
+}
+
+type FailReturns struct{}
+
 // Fail returns a new fail node, which always fails in one tick.
-func Fail[Blackboard any](params core.Params, returns core.Returns) core.Node[Blackboard] {
-	base := core.NewLeaf[Blackboard]("Fail", params, returns)
+func Fail[Blackboard any](params FailParams, returns FailReturns) core.Node[Blackboard] {
+	base := core.NewLeaf[Blackboard](params, returns)
 	return &fail[Blackboard]{Leaf: base}
 }
 
 // fail ...
 type fail[Blackboard any] struct {
-	core.Leaf[Blackboard]
+	core.Leaf[Blackboard, FailParams, FailReturns]
 }
 
 // Enter ...

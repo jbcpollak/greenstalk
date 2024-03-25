@@ -27,6 +27,7 @@ type Walkable[Blackboard any] interface {
 	Status() Status
 	SetStatus(Status)
 	Id() uuid.UUID
+	Name() string
 	Category() Category
 	String() string
 
@@ -45,6 +46,10 @@ type Node[Blackboard any] interface {
 	Leave(Blackboard)
 }
 
+type Params interface {
+	Name() string
+}
+
 // BaseNode contains properties shared by all categories of node.
 // Do not use this type directly.
 type BaseNode struct {
@@ -54,8 +59,8 @@ type BaseNode struct {
 	status   Status
 }
 
-func newBaseNode(category Category, name string) BaseNode {
-	return BaseNode{id: uuid.New(), category: category, name: name}
+func newBaseNode(category Category, params Params) BaseNode {
+	return BaseNode{id: uuid.New(), category: category, name: params.Name()}
 }
 
 // Status returns the status of this node.

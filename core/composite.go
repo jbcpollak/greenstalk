@@ -10,9 +10,9 @@ type Composite[Blackboard any] struct {
 }
 
 // NewComposite creates a new composite base node.
-func NewComposite[Blackboard any](name string, children []Node[Blackboard]) Composite[Blackboard] {
+func NewComposite[Blackboard any, P Params](params P, children []Node[Blackboard]) Composite[Blackboard] {
 	return Composite[Blackboard]{
-		BaseNode: newBaseNode(CategoryComposite, name),
+		BaseNode: newBaseNode(CategoryComposite, params),
 		Children: children,
 	}
 }

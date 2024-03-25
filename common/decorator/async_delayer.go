@@ -10,27 +10,20 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type AsyncDelayerParams struct {
+	core.DecoratorParams
+
+	Delay time.Duration
+}
+
 // AsyncDelayer ...
-func AsyncDelayer[Blackboard any](params core.Params, child core.Node[Blackboard]) core.Node[Blackboard] {
-	v, err := params.Get("delay")
-	if err != nil {
-		panic(err)
-	}
-	delay, ok := v.(time.Duration)
-	if !ok {
-		panic(fmt.Errorf("delay must be a time.Duration"))
-	}
+func AsyncDelayer[Blackboard any](params AsyncDelayerParams, child core.Node[Blackboard]) core.Node[Blackboard] {
 
-	label, err := params.GetString("label")
-	if err != nil {
-		panic(err)
-	}
-
-	base := core.NewDecorator("AsyncDelayer "+label, params, child)
+	base := core.NewDecorator(params.DecoratorParams, child)
 
 	d := &asyncdelayer[Blackboard]{
 		Decorator: base,
-		delay:     delay,
+		delay:     params.Delay,
 	}
 	return d
 }

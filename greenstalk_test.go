@@ -23,19 +23,16 @@ type TestBlackboard struct {
 }
 
 // Counter increments a counter on the blackboard.
-func Counter(params core.Params, returns core.Returns) core.Node[TestBlackboard] {
-	label, err := params.GetString("label")
-	if err != nil {
-		panic(err)
-	}
+func Counter(params core.BaseParams) core.Node[TestBlackboard] {
+	name := params.Name()
 
-	base := core.NewLeaf[TestBlackboard]("Counter "+label, params, returns)
+	base := core.NewLeaf[TestBlackboard](core.BaseParams("Counter "+name), struct{}{})
 	return &counter{Leaf: base}
 }
 
 // succeed ...
 type counter struct {
-	core.Leaf[TestBlackboard]
+	core.Leaf[TestBlackboard, core.BaseParams, struct{}]
 }
 
 // Enter ...
@@ -55,8 +52,8 @@ func (a *counter) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) c
 func (a *counter) Leave(bb TestBlackboard) {}
 
 var synchronousRoot = Sequence[TestBlackboard](
-	Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
-	Succeed[TestBlackboard](nil, nil),
+	Repeater(RepeaterParams{N: 2}, Fail[TestBlackboard](FailParams{}, struct{}{})),
+	Succeed[TestBlackboard](SucceedParams{}, struct{}{}),
 )
 
 func TestUpdate(t *testing.T) {
@@ -87,22 +84,22 @@ var delay = 100
 var asynchronousRoot = Sequence[TestBlackboard](
 	// Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
 	AsyncDelayer[TestBlackboard](
-		core.Params{
-			"label": "First",
-			"delay": time.Duration(delay) * time.Millisecond,
+		AsyncDelayerParams{
+			DecoratorParams: core.DecoratorParams{
+				BaseParams: core.BaseParams("First"),
+			},
+			Delay: time.Duration(delay) * time.Millisecond,
 		},
-		Counter(core.Params{
-			"label": "First",
-		}, nil),
+		Counter("First"),
 	),
 	AsyncDelayer[TestBlackboard](
-		core.Params{
-			"label": "Second",
-			"delay": time.Duration(delay) * time.Millisecond,
+		AsyncDelayerParams{
+			DecoratorParams: core.DecoratorParams{
+				BaseParams: core.BaseParams("Second"),
+			},
+			Delay: time.Duration(delay) * time.Millisecond,
 		},
-		Counter(core.Params{
-			"label": "Second",
-		}, nil),
+		Counter(core.BaseParams("Second")),
 	),
 )
 

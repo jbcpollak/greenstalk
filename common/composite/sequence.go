@@ -10,7 +10,7 @@ import (
 // all children succeed. If a child returns Running, the sequence node
 // will resume execution from that child the next tick.
 func Sequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite("Sequence", children)
+	base := core.NewComposite(core.BaseParams("Sequence"), children)
 	return &sequence[Blackboard]{Composite: base}
 }
 

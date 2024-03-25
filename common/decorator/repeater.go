@@ -7,18 +7,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type RepeaterParams struct {
+	N int
+}
+
 // Repeater updates its child n times, at which point the repeater
 // returns Success. The repeater runs forever if n == 0.
-func Repeater[Blackboard any](params core.Params, child core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewDecorator("Repeater", params, child)
+func Repeater[Blackboard any](params RepeaterParams, child core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewDecorator(core.DecoratorParams{BaseParams: "Repeater"}, child)
 	d := &repeater[Blackboard]{Decorator: base}
 
-	n, err := params.GetInt("n")
-	if err != nil {
-		panic(err)
-	}
-
-	d.n = n
+	d.n = params.N
 	return d
 }
 

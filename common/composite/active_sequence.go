@@ -10,7 +10,7 @@ import (
 // all children succeed in one tick, else returns the status of
 // the non-succeeding node. Restarts iteration the next tick.
 func ActiveSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite("ActiveSequence", children)
+	base := core.NewComposite(core.BaseParams("ActiveSequence"), children)
 	return &activeSequence[Blackboard]{Composite: base}
 }
 
