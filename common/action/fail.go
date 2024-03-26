@@ -17,7 +17,7 @@ func (p FailParams) Name() string {
 type FailReturns struct{}
 
 // Fail returns a new fail node, which always fails in one tick.
-func Fail[Blackboard any](params FailParams, returns FailReturns) core.Node[Blackboard] {
+func Fail[Blackboard any](params FailParams, returns FailReturns) *fail[Blackboard] {
 	base := core.NewLeaf[Blackboard](params, returns)
 	return &fail[Blackboard]{Leaf: base}
 }
