@@ -35,16 +35,6 @@ type asyncdelayer[Blackboard any] struct {
 	start time.Time
 }
 
-// Enter ...
-func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	d.start = time.Now()
-	d.SetStatus(core.StatusInitialized)
-
-	log.Info().Msgf("%s Entered", d.BaseNode.Name())
-
-	return d.Tick(ctx, bb, evt)
-}
-
 type DelayerFinishedEvent struct {
 	targetNodeId uuid.UUID
 	start        time.Time
@@ -67,6 +57,16 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 
 }
 
+// Activate ...
+func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	d.start = time.Now()
+	d.SetStatus(core.StatusInitialized)
+
+	log.Info().Msgf("%s: Returning AsyncRunning", d.Name())
+
+	return core.NodeAsyncRunning(d.doDelay)
+}
+
 // Tick ...
 func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	log.Info().Msgf("%s: Tick", d.Name())
@@ -78,13 +78,7 @@ func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt 
 		}
 	}
 
-	if d.Status() == core.StatusInitialized {
-		log.Info().Msgf("%s: Returning AsyncRunning", d.Name())
-
-		return core.NodeAsyncRunning(d.doDelay)
-	} else {
-		return core.StatusFailure
-	}
+	return core.StatusRunning
 }
 
 // Leave ...
