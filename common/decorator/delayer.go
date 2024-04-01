@@ -31,9 +31,11 @@ type delayer[Blackboard any] struct {
 	start time.Time
 }
 
-// Enter ...
-func (d *delayer[Blackboard]) Enter(bb Blackboard) {
+// Activate ...
+func (d *delayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	d.start = time.Now()
+
+	return d.Tick(ctx, bb, evt)
 }
 
 // Tick ...

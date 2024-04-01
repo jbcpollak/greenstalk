@@ -27,8 +27,10 @@ type repeater[Blackboard any] struct {
 	i int
 }
 
-func (d *repeater[Blackboard]) Enter(bb Blackboard) {
+func (d *repeater[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	d.i = 0
+
+	return d.Tick(ctx, bb, evt)
 }
 
 func (d *repeater[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

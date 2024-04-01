@@ -18,7 +18,10 @@ type activeSequence[Blackboard any] struct {
 	core.Composite[Blackboard]
 }
 
-func (s *activeSequence[Blackboard]) Enter(bb Blackboard) {}
+func (s *activeSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	// No distinction between activation and ticking
+	return s.Tick(ctx, bb, evt)
+}
 
 func (s *activeSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	for i := 0; i < len(s.Children); i++ {

@@ -41,7 +41,7 @@ type Node[Blackboard any] interface {
 	Walkable[Blackboard]
 
 	// Must be implemented by the custom node.
-	Enter(Blackboard)
+	Activate(context.Context, Blackboard, Event) NodeResult
 	Tick(context.Context, Blackboard, Event) NodeResult
 	Leave(Blackboard)
 }
