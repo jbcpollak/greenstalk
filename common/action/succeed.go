@@ -27,7 +27,7 @@ type succeed[Blackboard any] struct {
 	core.Leaf[Blackboard, SucceedParams, SucceedReturns]
 }
 
-// Enter ...
+// Activate ...
 func (a *succeed[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	return core.StatusSuccess
 }

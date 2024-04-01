@@ -18,7 +18,7 @@ type randomSelector[Blackboard any] struct {
 	core.Composite[Blackboard]
 }
 
-// Enter ...
+// Activate ...
 func (s *randomSelector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	return s.Tick(ctx, bb, evt)
 }

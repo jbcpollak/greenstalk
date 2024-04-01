@@ -27,7 +27,7 @@ type fail[Blackboard any] struct {
 	core.Leaf[Blackboard, FailParams, FailReturns]
 }
 
-// Enter ...
+// Activate ...
 func (a *fail[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	return core.StatusFailure
 }
