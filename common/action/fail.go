@@ -28,11 +28,14 @@ type fail[Blackboard any] struct {
 }
 
 // Enter ...
-func (a *fail[Blackboard]) Enter(bb Blackboard) {}
+func (a *fail[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	return core.StatusFailure
+}
 
 // Tick ...
 func (a *fail[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	return core.StatusFailure
+	// Should never get here
+	return core.StatusError
 }
 
 // Leave ...

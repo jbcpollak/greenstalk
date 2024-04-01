@@ -36,11 +36,13 @@ type asyncdelayer[Blackboard any] struct {
 }
 
 // Enter ...
-func (d *asyncdelayer[Blackboard]) Enter(bb Blackboard) {
+func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	d.start = time.Now()
 	d.SetStatus(core.StatusInitialized)
 
 	log.Info().Msgf("%s Entered", d.BaseNode.Name())
+
+	return d.Tick(ctx, bb, evt)
 }
 
 type DelayerFinishedEvent struct {

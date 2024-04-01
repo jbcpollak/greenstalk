@@ -39,9 +39,11 @@ type parallel[Blackboard any] struct {
 	completed []bool
 }
 
-func (s *parallel[Blackboard]) Enter(bb Blackboard) {
+func (s *parallel[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	s.succ = 0
 	s.fail = 0
+
+	return s.Tick(ctx, bb, evt)
 }
 
 func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

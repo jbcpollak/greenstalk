@@ -18,8 +18,10 @@ type randomSequence[Blackboard any] struct {
 	core.Composite[Blackboard]
 }
 
-func (s *randomSequence[Blackboard]) Enter(bb Blackboard) {
+func (s *randomSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	shuffle(s.Children)
+
+	return s.Tick(ctx, bb, evt)
 }
 
 func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

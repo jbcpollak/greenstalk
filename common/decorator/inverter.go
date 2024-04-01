@@ -17,8 +17,9 @@ type inverter[Blackboard any] struct {
 	core.Decorator[Blackboard]
 }
 
-// Enter ...
-func (d *inverter[Blackboard]) Enter(bb Blackboard) {}
+func (d *inverter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	return d.Tick(ctx, bb, evt)
+}
 
 // Tick ...
 func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

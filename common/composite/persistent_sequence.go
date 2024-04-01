@@ -18,7 +18,9 @@ type persistentSequence[Blackboard any] struct {
 	core.Composite[Blackboard]
 }
 
-func (s *persistentSequence[Blackboard]) Enter(bb Blackboard) {}
+func (s *persistentSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	return s.Tick(ctx, bb, evt)
+}
 
 func (s *persistentSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	for s.CurrentChild < len(s.Children) {

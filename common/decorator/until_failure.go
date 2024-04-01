@@ -16,7 +16,9 @@ type untilFailure[Blackboard any] struct {
 	core.Decorator[Blackboard]
 }
 
-func (d *untilFailure[Blackboard]) Enter(bb Blackboard) {}
+func (d *untilFailure[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	return d.Tick(ctx, bb, evt)
+}
 
 func (d *untilFailure[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	status := core.Update(ctx, d.Child, bb, evt)

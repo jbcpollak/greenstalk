@@ -39,8 +39,8 @@ type while[Blackboard any] struct {
 	action core.Node[Blackboard]
 }
 
-func (d *while[Blackboard]) Enter(bb Blackboard) {
-
+func (d *while[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	return d.Tick(ctx, bb, evt)
 }
 
 func (d *while[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

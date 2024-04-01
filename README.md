@@ -73,7 +73,7 @@ While the library offers a set of pre-made common node types, it's easy to imple
 In order to define a custom node type, the type must embed `*core.T` where `T` is either `Composite`, `Decorator` or `Leaf`, and define the following methods:
 
 ```go
-(n *YourCustomNode) Enter(Blackboard)
+(n *YourCustomNode) Activate(Blackboard)
 (n *YourCustomNode) Tick(Blackboard) core.Status
 (n *YourCustomNode) Leave(Blackboard)
 ```

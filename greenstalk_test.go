@@ -35,11 +35,13 @@ type counter struct {
 	core.Leaf[TestBlackboard, core.BaseParams, struct{}]
 }
 
-// Enter ...
-func (a *counter) Enter(bb TestBlackboard) {}
-
 // Tick ...
-var countChan = make(chan uint, 0)
+var countChan = make(chan uint)
+
+// Enter ...
+func (a *counter) Activate(ctx context.Context, bb TestBlackboard, evt core.Event) core.NodeResult {
+	return a.Tick(ctx, bb, evt)
+}
 
 func (a *counter) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) core.NodeResult {
 	log.Info().Msgf("%s: Incrementing count", a.Name())

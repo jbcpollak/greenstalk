@@ -18,8 +18,11 @@ type selector[Blackboard any] struct {
 	core.Composite[Blackboard]
 }
 
-func (s *selector[Blackboard]) Enter(bb Blackboard) {
+func (s *selector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	s.Composite.CurrentChild = 0
+
+	// Tick as expected
+	return s.Tick(ctx, bb, evt)
 }
 
 func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

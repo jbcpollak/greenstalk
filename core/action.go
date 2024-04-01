@@ -14,6 +14,7 @@ type Leaf[Blackboard any, P Params, Returns any] struct {
 }
 
 // NewLeaf creates a new leaf base node.
+// TODO: change Params to interface and save it?
 func NewLeaf[Blackboard any, P Params, Returns any](params P, returns Returns) Leaf[Blackboard, P, Returns] {
 	return Leaf[Blackboard, P, Returns]{
 		BaseNode: newBaseNode(CategoryLeaf, params),

@@ -19,7 +19,9 @@ type randomSelector[Blackboard any] struct {
 }
 
 // Enter ...
-func (s *randomSelector[Blackboard]) Enter(bb Blackboard) {}
+func (s *randomSelector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+	return s.Tick(ctx, bb, evt)
+}
 
 // Tick ...
 func (s *randomSelector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
