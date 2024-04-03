@@ -44,7 +44,10 @@ func TestSignaller(t *testing.T) {
 
 	select {
 	case c := <-sigChan:
-		log.Info().Msgf("got count %v", c)
+		log.Info().Msgf("got signal %v", c)
+		if !c {
+			t.Errorf("Expected true, got %v", c)
+		}
 	case <-time.After(d):
 		t.Errorf("Timeout after delaying %v", d)
 	}
