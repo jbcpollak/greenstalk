@@ -25,11 +25,11 @@ func TestFunctionCondition(t *testing.T) {
 		},
 	}, FunctionConditionReturns{})
 
-	var action = action.SideEffect[EmptyBlackboard](action.SideEffectParams{
+	var action = action.FunctionAction[EmptyBlackboard](action.FunctionActionParams{
 		Func: func() {
 			*counterPtr++
 		},
-	}, action.SideEffectReturns{})
+	}, action.FunctionActionReturns{})
 
 	var root = decorator.UntilFailure(
 		core.DecoratorParams{},
