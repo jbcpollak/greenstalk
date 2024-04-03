@@ -26,13 +26,13 @@ type TestBlackboard struct {
 func Counter(params core.BaseParams) core.Node[TestBlackboard] {
 	name := params.Name()
 
-	base := core.NewLeaf[TestBlackboard](core.BaseParams("Counter "+name), struct{}{})
+	base := core.NewLeaf[TestBlackboard](core.BaseParams("Counter " + name))
 	return &counter{Leaf: base}
 }
 
 // succeed ...
 type counter struct {
-	core.Leaf[TestBlackboard, core.BaseParams, struct{}]
+	core.Leaf[TestBlackboard, core.BaseParams]
 }
 
 // Tick ...
@@ -54,8 +54,8 @@ func (a *counter) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) c
 func (a *counter) Leave(bb TestBlackboard) {}
 
 var synchronousRoot = Sequence[TestBlackboard](
-	Repeater(RepeaterParams{N: 2}, Fail[TestBlackboard](FailParams{}, struct{}{})),
-	Succeed[TestBlackboard](SucceedParams{}, struct{}{}),
+	Repeater(RepeaterParams{N: 2}, Fail[TestBlackboard](FailParams{})),
+	Succeed[TestBlackboard](SucceedParams{}),
 )
 
 func TestUpdate(t *testing.T) {

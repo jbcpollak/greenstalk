@@ -1,10 +1,7 @@
 package action
 
 import (
-	"context"
-
 	"github.com/jbcpollak/greenstalk/core"
-	"github.com/rs/zerolog/log"
 )
 
 type SignallerParams[T any] struct {
@@ -15,29 +12,16 @@ type SignallerParams[T any] struct {
 }
 
 // Sends a Signal on the provided channel
-func Signaller[Blackboard any, T any](params SignallerParams[T]) *signaller[Blackboard, T] {
-	base := core.NewLeaf[Blackboard](params, core.EmptyReturns{})
-	return &signaller[Blackboard, T]{Leaf: base, params: params}
+func Signaller[Blackboard any, T any](params SignallerParams[T]) *function_action[Blackboard] {
+
+	fap := FunctionActionParams{
+		Func: func() {
+			// TODO: FunctionAction should pass some information to the function
+			// log.Info().Msgf("%s: Signalling", a.Name())
+
+			params.Channel <- params.Signal
+		},
+	}
+	base := core.NewLeaf[Blackboard](fap)
+	return &function_action[Blackboard]{Leaf: base}
 }
-
-// succeed ...
-type signaller[Blackboard any, T any] struct {
-	core.Leaf[Blackboard, SignallerParams[T], core.EmptyReturns]
-
-	params SignallerParams[T]
-}
-
-// Enter ...
-func (a *signaller[Blackboard, T]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	log.Info().Msgf("%s: Signalling", a.Name())
-
-	a.params.Channel <- a.params.Signal
-	return core.StatusSuccess
-}
-
-func (a *signaller[Blackboard, T]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	return core.StatusError
-}
-
-// Leave ...
-func (a *signaller[Blackboard, T]) Leave(bb Blackboard) {}

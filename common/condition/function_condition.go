@@ -14,13 +14,13 @@ type FunctionConditionParams struct {
 type FunctionConditionReturns struct{}
 
 // FunctionCondition executes the provided function that returns a boolean, and returns Success/Failure based on that boolean value
-func FunctionCondition[Blackboard any](params FunctionConditionParams, returns FunctionConditionReturns) *function_condition[Blackboard] {
-	base := core.NewLeaf[Blackboard, FunctionConditionParams, FunctionConditionReturns](params, returns)
+func FunctionCondition[Blackboard any](params FunctionConditionParams) *function_condition[Blackboard] {
+	base := core.NewLeaf[Blackboard, FunctionConditionParams](params)
 	return &function_condition[Blackboard]{Leaf: base}
 }
 
 type function_condition[Blackboard any] struct {
-	core.Leaf[Blackboard, FunctionConditionParams, FunctionConditionReturns]
+	core.Leaf[Blackboard, FunctionConditionParams]
 }
 
 func (a *function_condition[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
