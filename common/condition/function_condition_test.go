@@ -23,13 +23,13 @@ func TestFunctionCondition(t *testing.T) {
 		Func: func() bool {
 			return *counterPtr < 2
 		},
-	}, FunctionConditionReturns{})
+	})
 
 	var action = action.FunctionAction[EmptyBlackboard](action.FunctionActionParams{
 		Func: func() {
 			*counterPtr++
 		},
-	}, action.FunctionActionReturns{})
+	})
 
 	var root = decorator.UntilFailure(
 		core.DecoratorParams{},

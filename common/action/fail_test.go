@@ -18,7 +18,7 @@ func TestFail(t *testing.T) {
 	// Synchronous, so does not need to be cancelled.
 	ctx := context.Background()
 
-	fail := Fail[EmptyBlackboard](FailParams{}, struct{}{})
+	fail := Fail[EmptyBlackboard](FailParams{})
 
 	var failSequence = composite.Sequence[EmptyBlackboard](
 		fail,

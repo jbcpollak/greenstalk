@@ -11,16 +11,14 @@ type FunctionActionParams struct {
 	Func func()
 }
 
-type FunctionActionReturns struct{}
-
 // FunctionAction executes the provided function when activated and returns Success
-func FunctionAction[Blackboard any](params FunctionActionParams, returns FunctionActionReturns) *function_action[Blackboard] {
-	base := core.NewLeaf[Blackboard](params, returns)
+func FunctionAction[Blackboard any](params FunctionActionParams) *function_action[Blackboard] {
+	base := core.NewLeaf[Blackboard](params)
 	return &function_action[Blackboard]{Leaf: base}
 }
 
 type function_action[Blackboard any] struct {
-	core.Leaf[Blackboard, FunctionActionParams, FunctionActionReturns]
+	core.Leaf[Blackboard, FunctionActionParams]
 }
 
 func (a *function_action[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
