@@ -6,32 +6,37 @@ import (
 
 	"github.com/jbcpollak/greenstalk"
 	"github.com/jbcpollak/greenstalk/common/action"
+	"github.com/jbcpollak/greenstalk/common/composite"
 	"github.com/jbcpollak/greenstalk/common/decorator"
 	"github.com/jbcpollak/greenstalk/core"
 	"github.com/jbcpollak/greenstalk/util"
 )
 
-type BlackboardWithCounter struct {
-	counter int
-}
+type EmptyBlackboard struct{}
 
 func TestFunctionCondition(t *testing.T) {
 	ctx := context.Background()
 
-	var condition = FunctionCondition(FunctionConditionParams[BlackboardWithCounter]{
-		Func: func(bb BlackboardWithCounter) bool {
-			return bb.counter < 2
+	var counter = 0
+	var counterPtr = &counter
+	var condition = FunctionCondition[EmptyBlackboard](FunctionConditionParams{
+		Func: func() bool {
+			return *counterPtr < 2
 		},
 	}, FunctionConditionReturns{})
 
-	var action = action.SideEffect(action.SideEffectParams[BlackboardWithCounter]{
-		Func: func(bb BlackboardWithCounter) {
-			bb.counter++
+	var action = action.SideEffect[EmptyBlackboard](action.SideEffectParams{
+		Func: func() {
+			*counterPtr++
 		},
 	}, action.SideEffectReturns{})
 
-	var root = decorator.While(core.DecoratorParams{}, condition, action)
-	var blackboard = BlackboardWithCounter{counter: 0}
+	var root = decorator.UntilFailure(
+		core.DecoratorParams{},
+		composite.Sequence(condition, action),
+	)
+
+	var blackboard = EmptyBlackboard{}
 
 	tree, err := greenstalk.NewBehaviorTree(ctx, root, blackboard)
 	if err != nil {
@@ -39,13 +44,24 @@ func TestFunctionCondition(t *testing.T) {
 	}
 
 	evt := core.DefaultEvent{}
-	status := tree.Update(evt)
-	util.PrintTreeInColor(tree.Root)
-	if status != core.StatusSuccess {
-		t.Errorf("Unexpectedly got %v", status)
+	var status core.Status
+	loopCounter := 0
+	for ; loopCounter < 10; loopCounter++ {
+		status = tree.Update(evt)
+		if status != core.StatusRunning {
+			if status != core.StatusSuccess {
+				t.Errorf("Unexpectedly got %v", status)
+			}
+			break
+		}
 	}
 
-	if blackboard.counter != 2 {
-		t.Errorf("Unexpected counter value %v", blackboard.counter)
+	util.PrintTreeInColor(tree.Root)
+	if counter != 2 {
+		t.Errorf("Unexpected counter value %v", counter)
+	}
+
+	if loopCounter != 2 {
+		t.Errorf("Unexpected loopCounter value %v", loopCounter)
 	}
 }

@@ -6,25 +6,25 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-type SideEffectParams[Blackboard any] struct {
+type SideEffectParams struct {
 	core.BaseParams
-	Func func(bb Blackboard)
+	Func func()
 }
 
 type SideEffectReturns struct{}
 
 // SideEffect executes the provided function when activated and returns Success
-func SideEffect[Blackboard any](params SideEffectParams[Blackboard], returns SideEffectReturns) *side_effect[Blackboard] {
+func SideEffect[Blackboard any](params SideEffectParams, returns SideEffectReturns) *side_effect[Blackboard] {
 	base := core.NewLeaf[Blackboard](params, returns)
 	return &side_effect[Blackboard]{Leaf: base}
 }
 
 type side_effect[Blackboard any] struct {
-	core.Leaf[Blackboard, SideEffectParams[Blackboard], SideEffectReturns]
+	core.Leaf[Blackboard, SideEffectParams, SideEffectReturns]
 }
 
 func (a *side_effect[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	a.Params.Func(bb)
+	a.Params.Func()
 	return core.StatusSuccess
 }
 
