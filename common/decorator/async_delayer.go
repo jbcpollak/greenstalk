@@ -60,7 +60,6 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 // Activate ...
 func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	d.start = time.Now()
-	d.SetStatus(core.StatusInitialized)
 
 	log.Info().Msgf("%s: Returning AsyncRunning", d.Name())
 
