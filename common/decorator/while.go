@@ -24,9 +24,9 @@ import (
 //
 // This implementation is taken from https://github.com/DanTulovsky/greenstalk/blob/master/common/decorator/while.go
 // See also https://github.com/askft/greenstalk/pull/2
-func While[Blackboard any](params core.DecoratorParams, cond, action core.Node[Blackboard]) core.Node[Blackboard] {
+func While[Blackboard any](cond, action core.Node[Blackboard]) core.Node[Blackboard] {
 
-	base := core.NewDecorator(core.DecoratorParams{BaseParams: "While"}, cond)
+	base := core.NewDecorator(core.BaseParams("While"), cond)
 	d := &while[Blackboard]{
 		Decorator: base,
 		action:    action, // action to run after condition succeeds
@@ -35,7 +35,7 @@ func While[Blackboard any](params core.DecoratorParams, cond, action core.Node[B
 }
 
 type while[Blackboard any] struct {
-	core.Decorator[Blackboard]
+	core.Decorator[Blackboard, core.BaseParams]
 	action core.Node[Blackboard]
 }
 

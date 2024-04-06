@@ -52,8 +52,9 @@ func (b BaseParams) Name() string {
 	return string(b)
 }
 
-type EmptyReturns struct {
-}
+type EmptyReturns struct{}
+
+type EmptyBlackboard struct{}
 
 type (
 	// Params denotes a list of parameters to a node.

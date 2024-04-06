@@ -7,13 +7,13 @@ import (
 )
 
 // UntilSuccess updates its child until it returns Success.
-func UntilSuccess[Blackboard any](params core.DecoratorParams, child core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewDecorator(core.DecoratorParams{BaseParams: "UntilSuccess"}, child)
+func UntilSuccess[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewDecorator(core.BaseParams("UntilSuccess"), child)
 	return &untilSuccess[Blackboard]{Decorator: base}
 }
 
 type untilSuccess[Blackboard any] struct {
-	core.Decorator[Blackboard]
+	core.Decorator[Blackboard, core.BaseParams]
 }
 
 func (d *untilSuccess[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

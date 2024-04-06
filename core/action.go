@@ -8,8 +8,7 @@ import (
 // Each leaf node has Params: data keys that the implementation imports
 // and Returns: data keys that the implementation exports.
 type Leaf[Blackboard any, P Params] struct {
-	BaseNode
-	Params P
+	BaseNode[P]
 }
 
 // NewLeaf creates a new leaf base node.
@@ -17,7 +16,6 @@ type Leaf[Blackboard any, P Params] struct {
 func NewLeaf[Blackboard any, P Params](params P) Leaf[Blackboard, P] {
 	return Leaf[Blackboard, P]{
 		BaseNode: newBaseNode(CategoryLeaf, params),
-		Params:   params,
 	}
 }
 
@@ -28,7 +26,7 @@ func (c *Leaf[Blackboard, Params]) Walk(walkFn WalkFunc[Blackboard], level int) 
 // String returns a string representation of the leaf node.
 func (a *Leaf[Blackboard, Params]) String() string {
 	return fmt.Sprintf("! %s (%v)",
-		a.name,
+		a.Params.Name(),
 		a.Params,
 	)
 }

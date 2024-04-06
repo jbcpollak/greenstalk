@@ -8,14 +8,14 @@ import (
 )
 
 type DelayerParams struct {
-	core.DecoratorParams
+	core.BaseParams
 
 	Delay time.Duration
 }
 
 // Delayer ...
 func Delayer[Blackboard any](params DelayerParams, child core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewDecorator(params.DecoratorParams, child)
+	base := core.NewDecorator(params, child)
 
 	d := &delayer[Blackboard]{
 		Decorator: base,
@@ -26,7 +26,7 @@ func Delayer[Blackboard any](params DelayerParams, child core.Node[Blackboard]) 
 
 // delayer ...
 type delayer[Blackboard any] struct {
-	core.Decorator[Blackboard]
+	core.Decorator[Blackboard, DelayerParams]
 	delay time.Duration // delay in milliseconds
 	start time.Time
 }

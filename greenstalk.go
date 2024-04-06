@@ -74,6 +74,8 @@ func (bt *BehaviorTree[Blackboard]) EventLoop(evt core.Event) {
 	for evt := range bt.events {
 		log.Info().Msgf("Event: %v", evt)
 		bt.Update(evt)
+
+		// TODO: Change to visitor pattern.
 		util.PrintTreeInColor(bt.Root)
 	}
 }

@@ -8,13 +8,13 @@ import (
 
 // Inverter ...
 func Inverter[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewDecorator(core.DecoratorParams{BaseParams: "Inverter"}, child)
+	base := core.NewDecorator(core.BaseParams("Inverter"), child)
 	return &inverter[Blackboard]{Decorator: base}
 }
 
 // inverter ...
 type inverter[Blackboard any] struct {
-	core.Decorator[Blackboard]
+	core.Decorator[Blackboard, core.BaseParams]
 }
 
 func (d *inverter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
@@ -23,13 +23,13 @@ func (d *inverter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt 
 
 // Tick ...
 func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	switch core.Update(ctx, d.Child, bb, evt) {
+	switch result := core.Update(ctx, d.Child, bb, evt); result {
 	case core.StatusSuccess:
 		return core.StatusFailure
 	case core.StatusFailure:
 		return core.StatusSuccess
 	default:
-		return core.StatusRunning
+		return result
 	}
 }
 

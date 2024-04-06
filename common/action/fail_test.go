@@ -12,19 +12,17 @@ import (
 	"github.com/jbcpollak/greenstalk/util"
 )
 
-type EmptyBlackboard struct{}
-
 func TestFail(t *testing.T) {
 	// Synchronous, so does not need to be cancelled.
 	ctx := context.Background()
 
-	fail := Fail[EmptyBlackboard](FailParams{})
+	fail := Fail[core.EmptyBlackboard](FailParams{})
 
-	var failSequence = composite.Sequence[EmptyBlackboard](
+	var failSequence = composite.Sequence[core.EmptyBlackboard](
 		fail,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, failSequence, EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(ctx, failSequence, core.EmptyBlackboard{})
 	if err != nil {
 		panic(err)
 	}

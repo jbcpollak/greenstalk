@@ -22,39 +22,18 @@ type TestBlackboard struct {
 	count uint
 }
 
-// Counter increments a counter on the blackboard.
-func Counter(params core.BaseParams) core.Node[TestBlackboard] {
-	name := params.Name()
+var n = 0
 
-	base := core.NewLeaf[TestBlackboard](core.BaseParams("Counter " + name))
-	return &counter{Leaf: base}
+func untilTwo(status core.NodeResult) bool {
+	n++
+	return n == 2
 }
-
-// succeed ...
-type counter struct {
-	core.Leaf[TestBlackboard, core.BaseParams]
-}
-
-// Tick ...
-var countChan = make(chan uint)
-
-// Activate ...
-func (a *counter) Activate(ctx context.Context, bb TestBlackboard, evt core.Event) core.NodeResult {
-	return a.Tick(ctx, bb, evt)
-}
-
-func (a *counter) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) core.NodeResult {
-	log.Info().Msgf("%s: Incrementing count", a.Name())
-	bb.count++
-	countChan <- bb.count
-	return core.StatusSuccess
-}
-
-// Leave ...
-func (a *counter) Leave(bb TestBlackboard) {}
 
 var synchronousRoot = Sequence[TestBlackboard](
-	Repeater(RepeaterParams{N: 2}, Fail[TestBlackboard](FailParams{})),
+	RepeatUntil(RepeatUntilParams{
+		BaseParams: "RepeatUntilTwo",
+		Until:      untilTwo,
+	}, Fail[TestBlackboard](FailParams{})),
 	Succeed[TestBlackboard](SucceedParams{}),
 )
 
@@ -82,26 +61,32 @@ func TestUpdate(t *testing.T) {
 	log.Info().Msg("Done!")
 }
 
+var countChan = make(chan uint)
+
 var delay = 100
-var asynchronousRoot = Sequence[TestBlackboard](
+var asynchronousRoot = Sequence(
 	// Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
 	AsyncDelayer[TestBlackboard](
 		AsyncDelayerParams{
-			DecoratorParams: core.DecoratorParams{
-				BaseParams: core.BaseParams("First"),
-			},
-			Delay: time.Duration(delay) * time.Millisecond,
+			BaseParams: core.BaseParams("First"),
+			Delay:      time.Duration(delay) * time.Millisecond,
 		},
-		Counter("First"),
+		Counter[TestBlackboard](CounterParams{
+			BaseParams: "First Counter",
+			Limit:      10,
+			CountChan:  countChan,
+		}),
 	),
 	AsyncDelayer[TestBlackboard](
 		AsyncDelayerParams{
-			DecoratorParams: core.DecoratorParams{
-				BaseParams: core.BaseParams("Second"),
-			},
-			Delay: time.Duration(delay) * time.Millisecond,
+			BaseParams: core.BaseParams("Second"),
+			Delay:      time.Duration(delay) * time.Millisecond,
 		},
-		Counter(core.BaseParams("Second")),
+		Counter[TestBlackboard](CounterParams{
+			BaseParams: "Second Counter",
+			Limit:      10,
+			CountChan:  countChan,
+		}),
 	),
 )
 

@@ -15,7 +15,7 @@ func RandomSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node
 }
 
 type randomSequence[Blackboard any] struct {
-	core.Composite[Blackboard]
+	core.Composite[Blackboard, core.BaseParams]
 }
 
 func (s *randomSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
