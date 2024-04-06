@@ -71,12 +71,17 @@ func (bt *BehaviorTree[Blackboard]) EventLoop(evt core.Event) {
 	// Put the first event on the queue.
 	bt.events <- evt
 
-	for evt := range bt.events {
-		log.Info().Msgf("Event: %v", evt)
-		bt.Update(evt)
+	for {
+		select {
+		case <-bt.ctx.Done():
+			return
+		case evt := <-bt.events:
+			log.Info().Msgf("Event: %v", evt)
+			bt.Update(evt)
 
-		// TODO: Change to visitor pattern.
-		util.PrintTreeInColor(bt.Root)
+			// TODO: Change to visitor pattern.
+			util.PrintTreeInColor(bt.Root)
+		}
 	}
 }
 

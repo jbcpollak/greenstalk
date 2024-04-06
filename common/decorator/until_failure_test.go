@@ -2,7 +2,9 @@ package decorator
 
 import (
 	"context"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/jbcpollak/greenstalk"
 	"github.com/jbcpollak/greenstalk/common/action"
@@ -13,8 +15,10 @@ import (
 )
 
 func TestUntilFailure(t *testing.T) {
+	var wg sync.WaitGroup
+
 	// Synchronous, so does not need to be cancelled.
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	sigChan := make(chan bool)
 
@@ -50,10 +54,15 @@ func TestUntilFailure(t *testing.T) {
 	}
 
 	evt := core.DefaultEvent{}
-	go tree.EventLoop(evt)
+	wg.Add(1)
+	go func() {
+		tree.EventLoop(evt)
+		wg.Done()
+	}()
+
 	util.PrintTreeInColor(tree.Root)
 
-	// d := time.Duration(100) * time.Millisecond
+	d := time.Duration(100) * time.Millisecond
 
 	for loop := true; loop; {
 		select {
@@ -61,14 +70,17 @@ func TestUntilFailure(t *testing.T) {
 			log.Info().Msgf("got count %v", c)
 		case c := <-sigChan:
 			log.Info().Msgf("loop is finished %v", c)
+
 			loop = false
-			// case <-time.After(d):
-			// 	t.Errorf("Timeout after delaying %v", d)
+		case <-time.After(d):
+			t.Errorf("Timeout after delaying %v", d)
 		}
 	}
 
-	// if status != core.StatusSuccess {
-	// 	t.Errorf("Unexpectedly got %v", status)
-
-	// }
+	cancel()
+	wg.Wait()
+	status := tree.Root.Status()
+	if status != core.StatusSuccess {
+		t.Errorf("Unexpectedly got %v", status)
+	}
 }
