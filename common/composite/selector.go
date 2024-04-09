@@ -15,7 +15,7 @@ func Selector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Black
 }
 
 type selector[Blackboard any] struct {
-	core.Composite[Blackboard]
+	core.Composite[Blackboard, core.BaseParams]
 }
 
 func (s *selector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

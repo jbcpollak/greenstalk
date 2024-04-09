@@ -15,7 +15,7 @@ func PersistentSequence[Blackboard any](children ...core.Node[Blackboard]) core.
 }
 
 type persistentSequence[Blackboard any] struct {
-	core.Composite[Blackboard]
+	core.Composite[Blackboard, core.BaseParams]
 }
 
 func (s *persistentSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

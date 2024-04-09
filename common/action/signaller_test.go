@@ -25,13 +25,13 @@ func TestSignaller(t *testing.T) {
 		Channel: sigChan,
 		Signal:  true,
 	}
-	signaller := Signaller[EmptyBlackboard](params)
+	signaller := Signaller[core.EmptyBlackboard](params)
 
 	var signalSequence = composite.Sequence(
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, core.EmptyBlackboard{})
 	if err != nil {
 		panic(err)
 	}
@@ -70,13 +70,13 @@ func TestAsyncSignaller(t *testing.T) {
 		Channel: sigChan,
 		Signal:  true,
 	}
-	signaller := Signaller[EmptyBlackboard](params)
+	signaller := Signaller[core.EmptyBlackboard](params)
 
 	var signalSequence = composite.Sequence(
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, core.EmptyBlackboard{})
 	if err != nil {
 		panic(err)
 	}

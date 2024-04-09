@@ -32,7 +32,6 @@ func TestFunctionCondition(t *testing.T) {
 	})
 
 	var root = decorator.UntilFailure(
-		core.DecoratorParams{},
 		composite.Sequence(condition, action),
 	)
 

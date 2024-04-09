@@ -39,14 +39,23 @@ func PrintTreeInColor[Blackboard any](node core.Node[Blackboard]) {
 
 func printInColor[Blackboard any](node core.Walkable[Blackboard], level int) {
 	indent := strings.Repeat("    ", level)
-	color.Set(colorFor[node.Status()])
-	fmt.Println(indent + node.String())
+	color.Set(colorForStatus[node.Status()])
+	fmt.Println(indent + node.String() + " " + symbolForStatus[node.Status()])
 	color.Unset()
 }
 
-var colorFor = map[core.Status]color.Attribute{
+var colorForStatus = map[core.Status]color.Attribute{
 	core.StatusFailure: color.FgRed,
 	core.StatusRunning: color.FgYellow,
 	core.StatusSuccess: color.FgGreen,
 	core.StatusInvalid: color.FgMagenta,
+	core.StatusError:   color.BgRed,
+}
+
+var symbolForStatus = map[core.Status]string{
+	core.StatusFailure: "❌",
+	core.StatusRunning: "🏃‍➡️",
+	core.StatusSuccess: "✅",
+	core.StatusInvalid: "❓",
+	core.StatusError:   "🚨",
 }

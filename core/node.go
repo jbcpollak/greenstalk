@@ -19,6 +19,18 @@ func (e DefaultEvent) TargetNodeId() uuid.UUID {
 	return uuid.Nil
 }
 
+func TargetNodeEvent(id uuid.UUID) targetNodeEvent {
+	return targetNodeEvent{targetNodeId: id}
+}
+
+type targetNodeEvent struct {
+	targetNodeId uuid.UUID
+}
+
+func (e targetNodeEvent) TargetNodeId() uuid.UUID {
+	return e.targetNodeId
+}
+
 // Preliminary interface to work around intermediate types like
 // composite, decorator, etc not inplementing Enter/Tick/Leave
 type Walkable[Blackboard any] interface {
@@ -52,38 +64,42 @@ type Params interface {
 
 // BaseNode contains properties shared by all categories of node.
 // Do not use this type directly.
-type BaseNode struct {
+type BaseNode[P Params] struct {
 	id       uuid.UUID
 	category Category
-	name     string
 	status   Status
+	Params   P
 }
 
-func newBaseNode(category Category, params Params) BaseNode {
-	return BaseNode{id: uuid.New(), category: category, name: params.Name()}
+func newBaseNode[P Params](category Category, params P) BaseNode[P] {
+	return BaseNode[P]{
+		id:       uuid.New(),
+		category: category,
+		Params:   params,
+	}
 }
 
 // Status returns the status of this node.
-func (n *BaseNode) Id() uuid.UUID {
+func (n *BaseNode[P]) Id() uuid.UUID {
 	return n.id
 }
 
 // Status returns the status of this node.
-func (n *BaseNode) Name() string {
-	return n.name
+func (n *BaseNode[P]) Name() string {
+	return n.Params.Name()
 }
 
 // Status returns the status of this node.
-func (n *BaseNode) Status() Status {
+func (n *BaseNode[P]) Status() Status {
 	return n.status
 }
 
 // SetStatus sets the status of this node.
-func (n *BaseNode) SetStatus(status Status) {
+func (n *BaseNode[P]) SetStatus(status Status) {
 	n.status = status
 }
 
 // GetCategory returns the category of this node.
-func (n *BaseNode) Category() Category {
+func (n *BaseNode[P]) Category() Category {
 	return n.category
 }

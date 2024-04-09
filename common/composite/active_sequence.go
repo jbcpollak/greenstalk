@@ -15,7 +15,7 @@ func ActiveSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node
 }
 
 type activeSequence[Blackboard any] struct {
-	core.Composite[Blackboard]
+	core.Composite[Blackboard, core.BaseParams]
 }
 
 func (s *activeSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {

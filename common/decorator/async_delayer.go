@@ -11,7 +11,7 @@ import (
 )
 
 type AsyncDelayerParams struct {
-	core.DecoratorParams
+	core.BaseParams
 
 	Delay time.Duration
 }
@@ -19,7 +19,7 @@ type AsyncDelayerParams struct {
 // AsyncDelayer ...
 func AsyncDelayer[Blackboard any](params AsyncDelayerParams, child core.Node[Blackboard]) core.Node[Blackboard] {
 
-	base := core.NewDecorator(params.DecoratorParams, child)
+	base := core.NewDecorator(params, child)
 
 	d := &asyncdelayer[Blackboard]{
 		Decorator: base,
@@ -30,7 +30,7 @@ func AsyncDelayer[Blackboard any](params AsyncDelayerParams, child core.Node[Bla
 
 // delayer ...
 type asyncdelayer[Blackboard any] struct {
-	core.Decorator[Blackboard]
+	core.Decorator[Blackboard, AsyncDelayerParams]
 	delay time.Duration // delay in milliseconds
 	start time.Time
 }
@@ -54,7 +54,6 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 		log.Info().Msgf("Delayed: %v", time.Since(d.start))
 		return enqueue(DelayerFinishedEvent{d.Id(), d.start})
 	}
-
 }
 
 // Activate ...
