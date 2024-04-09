@@ -20,14 +20,11 @@ func RepeatUntil[Blackboard any](params RepeatUntilParams, child core.Node[Black
 	base := core.NewDecorator(params, child)
 	return &repeatUntil[Blackboard]{
 		Decorator: base,
-		until:     params.Until,
 	}
 }
 
 type repeatUntil[Blackboard any] struct {
 	core.Decorator[Blackboard, RepeatUntilParams]
-
-	until UntilCondition
 }
 
 func (d *repeatUntil[Blackboard]) repeat(_ context.Context, enqueue core.EnqueueFn) error {
@@ -45,11 +42,15 @@ func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt c
 	log.Info().Msg("Repeater: Calling child")
 	status := core.Update(ctx, d.Child, bb, evt)
 
-	if status == core.StatusError || status == core.StatusRunning || status == core.StatusInvalid {
+	if status == core.StatusError || status == core.StatusInvalid {
 		return status
 	}
 
-	if d.until(status) {
+	if asyncRunning, ok := status.(core.NodeAsyncRunning); ok {
+		return asyncRunning
+	}
+
+	if d.Params.Until(status) {
 		return core.StatusSuccess
 	}
 
