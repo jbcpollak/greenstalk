@@ -64,14 +64,15 @@ func TestUntilSuccess(t *testing.T) {
 
 	d := time.Duration(100) * time.Millisecond
 
-	for loop := true; loop; {
+LOOP:
+	for {
 		select {
 		case c := <-countChan:
 			log.Info().Msgf("got count %v", c)
 		case c := <-sigChan:
 			log.Info().Msgf("loop is finished %v", c)
 
-			loop = false
+			break LOOP
 		case <-time.After(d):
 			t.Errorf("Timeout after delaying %v", d)
 		}
