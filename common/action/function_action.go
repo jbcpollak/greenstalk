@@ -8,10 +8,11 @@ import (
 
 type FunctionActionParams struct {
 	core.BaseParams
-	Func func()
+	Func func() core.NodeResult
 }
 
-// FunctionAction executes the provided function when activated and returns Success
+// FunctionAction executes the provided function when activated and returns its result. Note that the function is executed
+// synchronously so it must not block or the tree becomes unresponsive. Use AsyncFunctionAction (TODO) for long running functions.
 func FunctionAction[Blackboard any](params FunctionActionParams) *function_action[Blackboard] {
 	base := core.NewLeaf[Blackboard](params)
 	return &function_action[Blackboard]{Leaf: base}
@@ -22,8 +23,7 @@ type function_action[Blackboard any] struct {
 }
 
 func (a *function_action[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	a.Params.Func()
-	return core.StatusSuccess
+	return a.Params.Func()
 }
 
 func (a *function_action[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
