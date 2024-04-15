@@ -20,7 +20,13 @@ func Update[Blackboard any](ctx context.Context, node Node[Blackboard], bb Black
 	node.SetStatus(status)
 
 	if status != StatusRunning {
-		node.Leave(bb)
+		err := node.Leave(bb)
+		if err != nil {
+			node.SetStatus(StatusError)
+			result = NodeRuntimeError{
+				Err: err,
+			}
+		}
 	}
 
 	return result
