@@ -7,18 +7,18 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-func With[Blackboard any, Closeable io.Closer](child core.Node[Blackboard]) core.Node[Blackboard] {
+func With[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewDecorator(core.BaseParams("With"), child)
-	return &with[Blackboard, Closeable]{Decorator: base}
+	return &with[Blackboard]{Decorator: base}
 }
 
-type with[Blackboard any, Closeable io.Closer] struct {
+type with[Blackboard any] struct {
 	core.Decorator[Blackboard, core.BaseParams]
-	CreateCloseable func() (Closeable, error)
-	closeable       Closeable
+	CreateCloseable func() (io.Closer, error)
+	closeable       io.Closer
 }
 
-func (d *with[Blackboard, Closeable]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *with[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	closeable, err := d.CreateCloseable()
 	if err != nil {
 		return core.NodeRuntimeError{
@@ -31,7 +31,7 @@ func (d *with[Blackboard, Closeable]) Activate(ctx context.Context, bb Blackboar
 }
 
 // Tick ...
-func (d *with[Blackboard, Closeable]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *with[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	switch result := core.Update(ctx, d.Child, bb, evt); result {
 	case core.StatusSuccess:
 		return core.StatusFailure
@@ -43,6 +43,6 @@ func (d *with[Blackboard, Closeable]) Tick(ctx context.Context, bb Blackboard, e
 }
 
 // Leave ...
-func (d *with[Blackboard, Closeable]) Leave(bb Blackboard) error {
+func (d *with[Blackboard]) Leave(bb Blackboard) error {
 	return d.closeable.Close()
 }
