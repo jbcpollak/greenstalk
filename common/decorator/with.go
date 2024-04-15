@@ -32,14 +32,7 @@ func (d *with[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core
 
 // Tick ...
 func (d *with[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	switch result := core.Update(ctx, d.Child, bb, evt); result {
-	case core.StatusSuccess:
-		return core.StatusFailure
-	case core.StatusFailure:
-		return core.StatusSuccess
-	default:
-		return result
-	}
+	return core.Update(ctx, d.Child, bb, evt)
 }
 
 // Leave ...
