@@ -77,4 +77,6 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	return core.StatusRunning
 }
 
-func (s *parallel[Blackboard]) Leave(bb Blackboard) {}
+func (s *parallel[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

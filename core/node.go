@@ -55,7 +55,7 @@ type Node[Blackboard any] interface {
 	// Must be implemented by the custom node.
 	Activate(context.Context, Blackboard, Event) NodeResult
 	Tick(context.Context, Blackboard, Event) NodeResult
-	Leave(Blackboard)
+	Leave(Blackboard) error
 }
 
 type Params interface {

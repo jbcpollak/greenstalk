@@ -31,4 +31,6 @@ func (a *function_action[Blackboard]) Tick(ctx context.Context, bb Blackboard, e
 	return core.StatusError
 }
 
-func (a *function_action[Blackboard]) Leave(bb Blackboard) {}
+func (a *function_action[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

@@ -37,4 +37,6 @@ func (a *fail[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Eve
 }
 
 // Leave ...
-func (a *fail[Blackboard]) Leave(bb Blackboard) {}
+func (a *fail[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

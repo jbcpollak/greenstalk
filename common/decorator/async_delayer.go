@@ -80,4 +80,6 @@ func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt 
 }
 
 // Leave ...
-func (d *asyncdelayer[Blackboard]) Leave(bb Blackboard) {}
+func (d *asyncdelayer[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

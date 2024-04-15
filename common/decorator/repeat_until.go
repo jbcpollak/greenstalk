@@ -57,4 +57,6 @@ func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt c
 	return core.NodeAsyncRunning(d.repeat)
 }
 
-func (d *repeatUntil[Blackboard]) Leave(bb Blackboard) {}
+func (d *repeatUntil[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

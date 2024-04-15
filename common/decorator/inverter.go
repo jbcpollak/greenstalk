@@ -34,4 +34,6 @@ func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 }
 
 // Leave ...
-func (d *inverter[Blackboard]) Leave(bb Blackboard) {}
+func (d *inverter[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

@@ -31,4 +31,6 @@ func (s *randomSelector[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 }
 
 // Leave ...
-func (s *randomSelector[Blackboard]) Leave(bb Blackboard) {}
+func (s *randomSelector[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}
