@@ -46,8 +46,7 @@ func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 		if details, ok := result.(core.ErrorResultDetails); ok {
 			panic(details.Err)
 		} else {
-			// we currently only have NodeRuntimeError that return IsErroneous == true, so this
-			// should be unreachable
+			// Handle if we somehow get an error result that is not an ErrorResultDetails
 			panic(fmt.Errorf("erroneous status encountered %v", details))
 		}
 	}

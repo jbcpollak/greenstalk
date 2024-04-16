@@ -41,14 +41,8 @@ func printInColor[Blackboard any](node core.Walkable[Blackboard], level int) {
 	indent := strings.Repeat("    ", level)
 
 	status := node.Result().Status()
-	var symbol string
-	if status == core.StatusError {
-		color.Set(color.BgRed)
-		symbol = "🚨"
-	} else {
-		color.Set(colorForStatus[status])
-		symbol = symbolForStatus[status]
-	}
+	color.Set(colorForStatus[status])
+	symbol := symbolForStatus[status]
 
 	fmt.Println(indent + node.String() + " " + symbol)
 	color.Unset()
