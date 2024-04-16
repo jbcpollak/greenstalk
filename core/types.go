@@ -18,6 +18,7 @@ const (
 
 type NodeResult interface {
 	Status() Status
+	IsErroneous() bool
 }
 
 // Status denotes the return value of the execution of a node.
@@ -29,22 +30,27 @@ const (
 	StatusSuccess
 	StatusFailure
 	StatusRunning
-	StatusError
+	statusError
 )
 
 func (s Status) Status() Status { return s }
+func (s Status) IsErroneous() bool {
+	return s == statusError
+}
 
 type EnqueueFn func(Event) error
 type NodeAsyncRunning func(ctx context.Context, enqueue EnqueueFn) error
 
-func (NodeAsyncRunning) Status() Status { return StatusRunning }
+func (NodeAsyncRunning) Status() Status    { return StatusRunning }
+func (NodeAsyncRunning) IsErroneous() bool { return false }
 
 type NodeRuntimeError struct {
 	Err error
 }
 
-func (n NodeRuntimeError) Status() Status { return StatusError }
-func (n NodeRuntimeError) String() string { return n.Err.Error() }
+func (n NodeRuntimeError) Status() Status    { return statusError }
+func (n NodeRuntimeError) String() string    { return n.Err.Error() }
+func (n NodeRuntimeError) IsErroneous() bool { return true }
 
 type BaseParams string
 

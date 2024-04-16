@@ -42,7 +42,7 @@ func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt c
 	log.Info().Msg("Repeater: Calling child")
 	status := core.Update(ctx, d.Child, bb, evt)
 
-	if status.Status() == core.StatusError || status.Status() == core.StatusInvalid {
+	if status.IsErroneous() || status.Status() == core.StatusInvalid {
 		return status
 	}
 

@@ -2,6 +2,7 @@ package action
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
@@ -28,7 +29,9 @@ func (a *function_action[Blackboard]) Activate(ctx context.Context, bb Blackboar
 
 func (a *function_action[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
 	// Should never get here
-	return core.StatusError
+	return core.NodeRuntimeError{
+		Err: fmt.Errorf("FunctionAction node should not be ticked"),
+	}
 }
 
 func (a *function_action[Blackboard]) Leave(bb Blackboard) error {

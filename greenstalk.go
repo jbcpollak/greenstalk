@@ -42,6 +42,16 @@ func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
 
 	status := result.Status()
+	if status.IsErroneous() {
+		if status, ok := result.(core.NodeRuntimeError); ok {
+			panic(status.Err)
+		} else {
+			// we currently only have NodeRuntimeError that return IsErroneous == true, so this
+			// should be unreachable
+			panic(fmt.Errorf("erroneous status encountered %v", status))
+		}
+	}
+
 	switch status {
 	case core.StatusSuccess:
 		// whatever
@@ -53,10 +63,6 @@ func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 				bt.events <- evt
 				return nil
 			})
-		}
-	case core.StatusError:
-		if status, ok := result.(core.NodeRuntimeError); ok {
-			panic(status.Err)
 		}
 	default:
 		panic(fmt.Errorf("invalid status %v", status))

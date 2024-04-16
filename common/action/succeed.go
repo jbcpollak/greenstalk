@@ -2,6 +2,7 @@ package action
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
@@ -32,8 +33,9 @@ func (a *succeed[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt c
 
 // Tick ...
 func (a *succeed[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	// Should never get here
-	return core.StatusError
+	return core.NodeRuntimeError{
+		Err: fmt.Errorf("Succeed node should not be ticked"),
+	}
 }
 
 // Leave ...
