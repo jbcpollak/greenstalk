@@ -32,18 +32,18 @@ type delayer[Blackboard any] struct {
 }
 
 // Activate ...
-func (d *delayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *delayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	d.start = time.Now()
 
 	return d.Tick(ctx, bb, evt)
 }
 
 // Tick ...
-func (d *delayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *delayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	if time.Since(d.start) > d.delay {
 		return core.Update(ctx, d.Child, bb, evt)
 	}
-	return core.StatusRunning
+	return core.RunningResult()
 }
 
 // Leave ...

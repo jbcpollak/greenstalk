@@ -16,11 +16,6 @@ const (
 	CategoryLeaf      = Category("leaf")
 )
 
-type NodeResult interface {
-	Status() Status
-	IsErroneous() bool
-}
-
 // Status denotes the return value of the execution of a node.
 type Status int
 
@@ -30,27 +25,55 @@ const (
 	StatusSuccess
 	StatusFailure
 	StatusRunning
-	statusError
+	StatusError
 )
 
-func (s Status) Status() Status { return s }
-func (s Status) IsErroneous() bool {
-	return s == statusError
+type ResultDetails interface {
+	Status() Status
+}
+
+type simpleResultDetails struct {
+	status Status
+}
+
+func (d simpleResultDetails) Status() Status { return d.status }
+
+func SuccessResult() ResultDetails {
+	return simpleResultDetails{status: StatusSuccess}
+}
+func FailureResult() ResultDetails {
+	return simpleResultDetails{status: StatusFailure}
+}
+func InvalidResult() ResultDetails {
+	return simpleResultDetails{status: StatusInvalid}
+}
+func RunningResult() ResultDetails {
+	return simpleResultDetails{status: StatusRunning}
 }
 
 type EnqueueFn func(Event) error
-type NodeAsyncRunning func(ctx context.Context, enqueue EnqueueFn) error
+type RunningFn func(ctx context.Context, enqueue EnqueueFn) error
 
-func (NodeAsyncRunning) Status() Status    { return StatusRunning }
-func (NodeAsyncRunning) IsErroneous() bool { return false }
+func InitRunningResult(fn RunningFn) InitRunningResultDetails {
+	return InitRunningResultDetails{fn}
+}
 
-type NodeRuntimeError struct {
+type InitRunningResultDetails struct {
+	RunningFn RunningFn
+}
+
+func (InitRunningResultDetails) Status() Status { return StatusRunning }
+
+func ErrorResult(err error) ErrorResultDetails {
+	return ErrorResultDetails{err}
+}
+
+type ErrorResultDetails struct {
 	Err error
 }
 
-func (n NodeRuntimeError) Status() Status    { return statusError }
-func (n NodeRuntimeError) String() string    { return n.Err.Error() }
-func (n NodeRuntimeError) IsErroneous() bool { return true }
+func (n ErrorResultDetails) Status() Status { return StatusError }
+func (n ErrorResultDetails) Error() error   { return n.Err }
 
 type BaseParams string
 

@@ -57,16 +57,16 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 }
 
 // Activate ...
-func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	d.start = time.Now()
 
 	log.Info().Msgf("%s: Returning AsyncRunning", d.Name())
 
-	return core.NodeAsyncRunning(d.doDelay)
+	return core.InitRunningResult(d.doDelay)
 }
 
 // Tick ...
-func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	log.Info().Msgf("%s: Tick", d.Name())
 
 	if dfe, ok := evt.(DelayerFinishedEvent); ok {
@@ -76,7 +76,7 @@ func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt 
 		}
 	}
 
-	return core.StatusRunning
+	return core.RunningResult()
 }
 
 // Leave ...

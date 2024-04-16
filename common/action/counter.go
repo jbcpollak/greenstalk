@@ -27,19 +27,19 @@ type counter[Blackboard any] struct {
 }
 
 // Activate ...
-func (a *counter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (a *counter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	return a.Tick(ctx, bb, evt)
 }
 
-func (a *counter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (a *counter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	log.Info().Msgf("%s: Incrementing count", a.Name())
 	a.currentValue++
 	a.Params.CountChan <- a.currentValue
 
 	if a.currentValue < a.Params.Limit {
-		return core.StatusSuccess
+		return core.SuccessResult()
 	}
-	return core.StatusFailure
+	return core.FailureResult()
 }
 
 // Leave ...

@@ -54,7 +54,6 @@ func TestSignaller(t *testing.T) {
 
 	if status != core.StatusSuccess {
 		t.Errorf("Unexpectedly got %v", status)
-
 	}
 }
 

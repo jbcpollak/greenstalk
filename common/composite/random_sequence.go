@@ -18,13 +18,13 @@ type randomSequence[Blackboard any] struct {
 	core.Composite[Blackboard, core.BaseParams]
 }
 
-func (s *randomSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *randomSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	shuffle(s.Children)
 
 	return s.Tick(ctx, bb, evt)
 }
 
-func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	for s.CurrentChild < len(s.Children) {
 		result := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
 		if result.Status() != core.StatusSuccess {
@@ -32,7 +32,7 @@ func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 		}
 		s.Composite.CurrentChild++
 	}
-	return core.StatusSuccess
+	return core.SuccessResult()
 }
 
 func (s *randomSequence[Blackboard]) Leave(bb Blackboard) error {

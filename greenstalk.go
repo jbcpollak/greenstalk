@@ -42,13 +42,13 @@ func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
 
 	status := result.Status()
-	if status.IsErroneous() {
-		if status, ok := result.(core.NodeRuntimeError); ok {
-			panic(status.Err)
+	if status == core.StatusError {
+		if details, ok := result.(core.ErrorResultDetails); ok {
+			panic(details.Err)
 		} else {
 			// we currently only have NodeRuntimeError that return IsErroneous == true, so this
 			// should be unreachable
-			panic(fmt.Errorf("erroneous status encountered %v", status))
+			panic(fmt.Errorf("erroneous status encountered %v", details))
 		}
 	}
 
@@ -58,8 +58,8 @@ func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 	case core.StatusFailure:
 		// whatever
 	case core.StatusRunning:
-		if asyncRunning, ok := result.(core.NodeAsyncRunning); ok {
-			go asyncRunning(bt.ctx, func(evt core.Event) error {
+		if running, ok := result.(core.InitRunningResultDetails); ok {
+			go running.RunningFn(bt.ctx, func(evt core.Event) error {
 				bt.events <- evt
 				return nil
 			})

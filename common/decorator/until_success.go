@@ -7,8 +7,8 @@ import (
 // UntilSuccess updates its child until it returns Success.
 func UntilSuccess[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
 
-	untilSuccess := func(status core.NodeResult) bool {
-		return status == core.StatusSuccess
+	untilSuccess := func(result core.ResultDetails) bool {
+		return result.Status() == core.StatusSuccess
 	}
 
 	return RepeatUntil(RepeatUntilParams{

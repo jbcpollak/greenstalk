@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type UntilCondition func(status core.NodeResult) bool
+type UntilCondition func(status core.ResultDetails) bool
 type RepeatUntilParams struct {
 	core.BaseParams
 
@@ -33,28 +33,27 @@ func (d *repeatUntil[Blackboard]) repeat(_ context.Context, enqueue core.Enqueue
 	return nil
 }
 
-func (d *repeatUntil[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *repeatUntil[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 
 	return d.Tick(ctx, bb, evt)
 }
 
-func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	log.Info().Msg("Repeater: Calling child")
-	status := core.Update(ctx, d.Child, bb, evt)
+	result := core.Update(ctx, d.Child, bb, evt)
+	status := result.Status()
 
-	if status.IsErroneous() || status.Status() == core.StatusInvalid {
-		return status
+	if status == core.StatusError ||
+		status == core.StatusInvalid ||
+		status == core.StatusRunning {
+		return result
 	}
 
-	if asyncRunning, ok := status.(core.NodeAsyncRunning); ok {
-		return asyncRunning
+	if d.Params.Until(result) {
+		return core.SuccessResult()
 	}
 
-	if d.Params.Until(status) {
-		return core.StatusSuccess
-	}
-
-	return core.NodeAsyncRunning(d.repeat)
+	return core.InitRunningResult(d.repeat)
 }
 
 func (d *repeatUntil[Blackboard]) Leave(bb Blackboard) error {

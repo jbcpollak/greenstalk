@@ -18,22 +18,22 @@ type selector[Blackboard any] struct {
 	core.Composite[Blackboard, core.BaseParams]
 }
 
-func (s *selector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *selector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	s.Composite.CurrentChild = 0
 
 	// Tick as expected
 	return s.Tick(ctx, bb, evt)
 }
 
-func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	for s.CurrentChild < len(s.Children) {
-		status := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
-		if status != core.StatusFailure {
-			return status
+		result := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
+		if result.Status() != core.StatusFailure {
+			return result
 		}
 		s.Composite.CurrentChild++
 	}
-	return core.StatusFailure
+	return core.FailureResult()
 }
 
 func (s *selector[Blackboard]) Leave(bb Blackboard) error {

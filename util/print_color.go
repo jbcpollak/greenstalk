@@ -40,14 +40,14 @@ func PrintTreeInColor[Blackboard any](node core.Node[Blackboard]) {
 func printInColor[Blackboard any](node core.Walkable[Blackboard], level int) {
 	indent := strings.Repeat("    ", level)
 
-	status := node.Status()
+	status := node.Result().Status()
 	var symbol string
-	if status.IsErroneous() {
+	if status == core.StatusError {
 		color.Set(color.BgRed)
 		symbol = "🚨"
 	} else {
-		color.Set(colorForStatus[node.Status()])
-		symbol = symbolForStatus[node.Status()]
+		color.Set(colorForStatus[status])
+		symbol = symbolForStatus[status]
 	}
 
 	fmt.Println(indent + node.String() + " " + symbol)

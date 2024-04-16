@@ -27,15 +27,15 @@ type succeed[Blackboard any] struct {
 }
 
 // Activate ...
-func (a *succeed[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	return core.StatusSuccess
+func (a *succeed[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+	return core.SuccessResult()
 }
 
 // Tick ...
-func (a *succeed[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	return core.NodeRuntimeError{
-		Err: fmt.Errorf("Succeed node should not be ticked"),
-	}
+func (a *succeed[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+	return core.ErrorResult(
+		fmt.Errorf("Succeed node should not be ticked"),
+	)
 }
 
 // Leave ...

@@ -39,14 +39,14 @@ type parallel[Blackboard any] struct {
 	completed []bool
 }
 
-func (s *parallel[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *parallel[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	s.succ = 0
 	s.fail = 0
 
 	return s.Tick(ctx, bb, evt)
 }
 
-func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 
 	// Update every child that has not completed yet every tick.
 	for i := 0; i < len(s.Children); i++ {
@@ -58,7 +58,9 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 
 		// Update a child and count whether it succeeded or failed,
 		// and mark it as completed in either of those two cases.
-		switch core.Update(ctx, s.Children[i], bb, evt) {
+		result := core.Update(ctx, s.Children[i], bb, evt)
+		status := result.Status()
+		switch status {
 		case core.StatusSuccess:
 			s.succ++
 			s.completed[i] = true
@@ -69,12 +71,12 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	}
 
 	if s.succ >= s.succReq {
-		return core.StatusSuccess
+		return core.SuccessResult()
 	}
 	if s.fail >= s.failReq {
-		return core.StatusFailure
+		return core.FailureResult()
 	}
-	return core.StatusRunning
+	return core.RunningResult()
 }
 
 func (s *parallel[Blackboard]) Leave(bb Blackboard) error {
