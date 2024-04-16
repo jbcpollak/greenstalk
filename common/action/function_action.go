@@ -2,13 +2,14 @@ package action
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
 
 type FunctionActionParams struct {
 	core.BaseParams
-	Func func() core.NodeResult
+	Func func() core.ResultDetails
 }
 
 // FunctionAction executes the provided function when activated and returns its result. Note that the function is executed
@@ -22,13 +23,15 @@ type function_action[Blackboard any] struct {
 	core.Leaf[Blackboard, FunctionActionParams]
 }
 
-func (a *function_action[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (a *function_action[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	return a.Params.Func()
 }
 
-func (a *function_action[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (a *function_action[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	// Should never get here
-	return core.StatusError
+	return core.ErrorResult(
+		fmt.Errorf("FunctionAction node should not be ticked"),
+	)
 }
 
 func (a *function_action[Blackboard]) Leave(bb Blackboard) error {

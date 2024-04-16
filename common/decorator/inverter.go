@@ -17,17 +17,17 @@ type inverter[Blackboard any] struct {
 	core.Decorator[Blackboard, core.BaseParams]
 }
 
-func (d *inverter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *inverter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	return d.Tick(ctx, bb, evt)
 }
 
 // Tick ...
-func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	switch result := core.Update(ctx, d.Child, bb, evt); result {
+func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+	switch result := core.Update(ctx, d.Child, bb, evt); result.Status() {
 	case core.StatusSuccess:
-		return core.StatusFailure
+		return core.FailureResult()
 	case core.StatusFailure:
-		return core.StatusSuccess
+		return core.SuccessResult()
 	default:
 		return result
 	}

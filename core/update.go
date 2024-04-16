@@ -6,26 +6,23 @@ import (
 
 // Update updates a node by calling its Enter method if it is not running,
 // then its Tick method, and finally Leave if it is not still running.
-func Update[Blackboard any](ctx context.Context, node Node[Blackboard], bb Blackboard, evt Event) NodeResult {
+func Update[Blackboard any](ctx context.Context, node Node[Blackboard], bb Blackboard, evt Event) ResultDetails {
 
-	var result NodeResult
+	var result ResultDetails
 
-	if node.Status() != StatusRunning {
+	if node.Result().Status() != StatusRunning {
 		result = node.Activate(ctx, bb, evt)
 	} else {
 		result = node.Tick(ctx, bb, evt)
 	}
 
-	status := result.Status()
-	node.SetStatus(status)
+	node.SetResult(result)
 
-	if status != StatusRunning {
+	if result.Status() != StatusRunning {
 		err := node.Leave(bb)
 		if err != nil {
-			node.SetStatus(StatusError)
-			result = NodeRuntimeError{
-				Err: err,
-			}
+			result = ErrorResult(err)
+			node.SetResult(result)
 		}
 	}
 

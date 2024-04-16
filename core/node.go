@@ -36,8 +36,8 @@ func (e targetNodeEvent) TargetNodeId() uuid.UUID {
 type Walkable[Blackboard any] interface {
 	// Automatically implemented by embedding a pointer to a
 	// Composite, Decorator or Leaf node in the custom node.
-	Status() Status
-	SetStatus(Status)
+	Result() ResultDetails
+	SetResult(ResultDetails)
 	Id() uuid.UUID
 	Name() string
 	Category() Category
@@ -53,8 +53,8 @@ type Node[Blackboard any] interface {
 	Walkable[Blackboard]
 
 	// Must be implemented by the custom node.
-	Activate(context.Context, Blackboard, Event) NodeResult
-	Tick(context.Context, Blackboard, Event) NodeResult
+	Activate(context.Context, Blackboard, Event) ResultDetails
+	Tick(context.Context, Blackboard, Event) ResultDetails
 	Leave(Blackboard) error
 }
 
@@ -67,7 +67,7 @@ type Params interface {
 type BaseNode[P Params] struct {
 	id       uuid.UUID
 	category Category
-	status   Status
+	result   ResultDetails
 	Params   P
 }
 
@@ -75,6 +75,7 @@ func newBaseNode[P Params](category Category, params P) BaseNode[P] {
 	return BaseNode[P]{
 		id:       uuid.New(),
 		category: category,
+		result:   InvalidResult(),
 		Params:   params,
 	}
 }
@@ -90,13 +91,13 @@ func (n *BaseNode[P]) Name() string {
 }
 
 // Status returns the status of this node.
-func (n *BaseNode[P]) Status() Status {
-	return n.status
+func (n *BaseNode[P]) Result() ResultDetails {
+	return n.result
 }
 
-// SetStatus sets the status of this node.
-func (n *BaseNode[P]) SetStatus(status Status) {
-	n.status = status
+// SetResult sets the current result of this node.
+func (n *BaseNode[P]) SetResult(result ResultDetails) {
+	n.result = result
 }
 
 // GetCategory returns the category of this node.

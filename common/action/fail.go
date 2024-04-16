@@ -2,6 +2,7 @@ package action
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
@@ -26,14 +27,14 @@ type fail[Blackboard any] struct {
 }
 
 // Activate ...
-func (a *fail[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
-	return core.StatusFailure
+func (a *fail[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+	return core.FailureResult()
 }
 
 // Tick ...
-func (a *fail[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (a *fail[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	// Should never get here
-	return core.StatusError
+	return core.ErrorResult(fmt.Errorf("Fail node should not be ticked"))
 }
 
 // Leave ...

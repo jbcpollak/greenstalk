@@ -19,12 +19,12 @@ type randomSelector[Blackboard any] struct {
 }
 
 // Activate ...
-func (s *randomSelector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *randomSelector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	return s.Tick(ctx, bb, evt)
 }
 
 // Tick ...
-func (s *randomSelector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *randomSelector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	index := rand.Intn(len(s.Children))
 	child := s.Children[index]
 	return core.Update(ctx, child, bb, evt)

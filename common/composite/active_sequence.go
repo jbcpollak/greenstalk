@@ -18,19 +18,19 @@ type activeSequence[Blackboard any] struct {
 	core.Composite[Blackboard, core.BaseParams]
 }
 
-func (s *activeSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *activeSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	// No distinction between activation and ticking
 	return s.Tick(ctx, bb, evt)
 }
 
-func (s *activeSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (s *activeSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	for i := 0; i < len(s.Children); i++ {
 		result := core.Update(ctx, s.Children[i], bb, evt)
 		if result.Status() != core.StatusSuccess {
 			return result
 		}
 	}
-	return core.StatusSuccess
+	return core.SuccessResult()
 }
 
 func (s *activeSequence[Blackboard]) Leave(bb Blackboard) error {

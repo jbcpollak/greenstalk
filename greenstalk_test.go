@@ -24,7 +24,7 @@ type TestBlackboard struct {
 
 var n = 0
 
-func untilTwo(status core.NodeResult) bool {
+func untilTwo(status core.ResultDetails) bool {
 	n++
 	return n == 2
 }

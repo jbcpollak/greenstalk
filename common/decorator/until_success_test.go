@@ -80,7 +80,7 @@ LOOP:
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Status()
+	status := tree.Root.Result().Status()
 	if status != core.StatusSuccess {
 		t.Errorf("Unexpectedly got %v", status)
 	}

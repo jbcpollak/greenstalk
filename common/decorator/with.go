@@ -18,12 +18,10 @@ type with[Blackboard any] struct {
 	closeable       io.Closer
 }
 
-func (d *with[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *with[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	closeable, err := d.createCloseable()
 	if err != nil {
-		return core.NodeRuntimeError{
-			Err: err,
-		}
+		return core.ErrorResult(err)
 	} else {
 		d.closeable = closeable
 	}
@@ -31,7 +29,7 @@ func (d *with[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core
 }
 
 // Tick ...
-func (d *with[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.NodeResult {
+func (d *with[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	return core.Update(ctx, d.Child, bb, evt)
 }
 
