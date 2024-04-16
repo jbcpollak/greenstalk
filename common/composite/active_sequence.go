@@ -33,4 +33,6 @@ func (s *activeSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 	return core.StatusSuccess
 }
 
-func (s *activeSequence[Blackboard]) Leave(bb Blackboard) {}
+func (s *activeSequence[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

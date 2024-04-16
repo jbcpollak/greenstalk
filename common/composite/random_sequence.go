@@ -35,8 +35,9 @@ func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 	return core.StatusSuccess
 }
 
-func (s *randomSequence[Blackboard]) Leave(bb Blackboard) {
+func (s *randomSequence[Blackboard]) Leave(bb Blackboard) error {
 	s.Composite.CurrentChild = 0
+	return nil
 }
 
 func shuffle[Blackboard any](nodes []core.Node[Blackboard]) {

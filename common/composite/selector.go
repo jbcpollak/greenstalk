@@ -36,4 +36,6 @@ func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	return core.StatusFailure
 }
 
-func (s *selector[Blackboard]) Leave(bb Blackboard) {}
+func (s *selector[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}
