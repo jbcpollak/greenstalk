@@ -34,8 +34,8 @@ func TestWith(t *testing.T) {
 
 	childCalled := new(bool)
 	*childCalled = false
-	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
-		Func: func() core.ResultDetails {
+	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams[core.EmptyBlackboard]{
+		Func: func(bb core.EmptyBlackboard) core.ResultDetails {
 			*childCalled = true
 			return core.SuccessResult()
 		},
