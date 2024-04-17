@@ -52,17 +52,17 @@ func RunningResult() ResultDetails {
 }
 
 type EnqueueFn func(Event) error
-type RunningFn func(ctx context.Context, enqueue EnqueueFn) error
+type RunningFn[Blackboard any] func(ctx context.Context, bb Blackboard, enqueue EnqueueFn) error
 
-func InitRunningResult(fn RunningFn) InitRunningResultDetails {
-	return InitRunningResultDetails{fn}
+func InitRunningResult[Blackboard any](fn RunningFn[Blackboard]) InitRunningResultDetails[Blackboard] {
+	return InitRunningResultDetails[Blackboard]{fn}
 }
 
-type InitRunningResultDetails struct {
-	RunningFn RunningFn
+type InitRunningResultDetails[Blackboard any] struct {
+	RunningFn RunningFn[Blackboard]
 }
 
-func (InitRunningResultDetails) Status() Status { return StatusRunning }
+func (InitRunningResultDetails[Blackboard]) Status() Status { return StatusRunning }
 
 func ErrorResult(err error) ErrorResultDetails {
 	return ErrorResultDetails{err}

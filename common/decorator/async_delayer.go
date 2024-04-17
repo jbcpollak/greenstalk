@@ -44,7 +44,7 @@ func (e DelayerFinishedEvent) TargetNodeId() uuid.UUID {
 	return e.targetNodeId
 }
 
-func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.EnqueueFn) error {
+func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, _ Blackboard, enqueue core.EnqueueFn) error {
 	t := time.NewTimer(d.delay)
 	defer t.Stop()
 	select {

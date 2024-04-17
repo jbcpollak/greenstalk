@@ -27,7 +27,7 @@ type repeatUntil[Blackboard any] struct {
 	core.Decorator[Blackboard, RepeatUntilParams]
 }
 
-func (d *repeatUntil[Blackboard]) repeat(_ context.Context, enqueue core.EnqueueFn) error {
+func (d *repeatUntil[Blackboard]) repeat(_ context.Context, _ Blackboard, enqueue core.EnqueueFn) error {
 	log.Info().Msg(d.Name() + ": repeating")
 	enqueue(core.TargetNodeEvent(d.Id()))
 	return nil

@@ -57,8 +57,8 @@ func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 	case core.StatusFailure:
 		// whatever
 	case core.StatusRunning:
-		if running, ok := result.(core.InitRunningResultDetails); ok {
-			go running.RunningFn(bt.ctx, func(evt core.Event) error {
+		if running, ok := result.(core.InitRunningResultDetails[Blackboard]); ok {
+			go running.RunningFn(bt.ctx, bt.Blackboard, func(evt core.Event) error {
 				bt.events <- evt
 				return nil
 			})
