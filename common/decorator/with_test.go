@@ -46,9 +46,9 @@ func TestWith(t *testing.T) {
 	closer := testCloser{
 		closeCalled: closeCalled,
 	}
-	with := With(child, func() (io.Closer, error) {
+	with := With(func() (io.Closer, error) {
 		return closer, nil
-	})
+	}, child)
 	// TODO: testCloser and the whole closeCalled thing above just creates a struct with an attached method
 	// Is there a more succinct way to write this?
 
