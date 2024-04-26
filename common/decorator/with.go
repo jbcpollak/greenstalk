@@ -7,7 +7,7 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-func With[Blackboard any](child core.Node[Blackboard], createCloseable func() (io.Closer, error)) core.Node[Blackboard] {
+func With[Blackboard any](createCloseable func() (io.Closer, error), child core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewDecorator(core.BaseParams("With"), child)
 	return &with[Blackboard]{Decorator: base, createCloseable: createCloseable}
 }
