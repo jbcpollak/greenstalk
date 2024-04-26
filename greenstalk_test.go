@@ -43,7 +43,12 @@ func TestUpdate(t *testing.T) {
 	// Synchronous, so does not need to be cancelled.
 	ctx := context.Background()
 
-	tree, err := NewBehaviorTree(ctx, synchronousRoot, TestBlackboard{id: 42})
+	tree, err := NewBehaviorTree[TestBlackboard](
+		synchronousRoot,
+		TestBlackboard{id: 42},
+		WithContext[TestBlackboard](ctx),
+		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -108,8 +113,11 @@ func TestEventLoop(t *testing.T) {
 	defer cancel()
 
 	bb := TestBlackboard{id: 42, count: 0}
-
-	tree, err := NewBehaviorTree(ctx, asynchronousRoot, bb)
+	tree, err := NewBehaviorTree(
+		asynchronousRoot, bb,
+		WithContext[TestBlackboard](ctx),
+		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}

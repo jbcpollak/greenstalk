@@ -46,6 +46,7 @@ type Walkable[Blackboard any] interface {
 	Walk(WalkFunc[Blackboard], int)
 }
 
+type Visitor[Blackboard any] func(Walkable[Blackboard])
 type WalkFunc[Blackboard any] func(Walkable[Blackboard], int)
 
 // The Node interface must be satisfied by any custom node.

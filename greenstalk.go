@@ -11,14 +11,20 @@ import (
 )
 
 // BehaviorTree ...
-type BehaviorTree[Blackboard any] struct {
+type behaviorTree[Blackboard any] struct {
 	ctx        context.Context
 	Root       core.Node[Blackboard]
 	Blackboard Blackboard
 	events     chan core.Event
+	visitor    core.Visitor[Blackboard]
 }
 
-func NewBehaviorTree[Blackboard any](ctx context.Context, root core.Node[Blackboard], bb Blackboard) (*BehaviorTree[Blackboard], error) {
+func NewBehaviorTree[Blackboard any](
+	root core.Node[Blackboard],
+	bb Blackboard,
+	opts ...TreeOption[Blackboard],
+) (*behaviorTree[Blackboard], error) {
+
 	var eb internal.ErrorBuilder
 	eb.SetMessage("NewBehaviorTree")
 	if root == nil {
@@ -28,17 +34,30 @@ func NewBehaviorTree[Blackboard any](ctx context.Context, root core.Node[Blackbo
 	if eb.Error() != nil {
 		return nil, eb.Error()
 	}
-	tree := &BehaviorTree[Blackboard]{
-		ctx:        ctx,
+
+	tree := &behaviorTree[Blackboard]{
+		ctx:        context.TODO(),
 		Root:       root,
 		Blackboard: bb,
 		events:     make(chan core.Event, 100 /* arbitrary */),
+		visitor:    func(n core.Walkable[Blackboard]) {},
 	}
+
+	// Apply all options to the tree.
+	for _, opt := range opts {
+		opt(tree)
+	}
+
 	return tree, nil
 }
 
+func (bt *behaviorTree[Blackboard]) WithVisitor(v core.Visitor[Blackboard]) *behaviorTree[Blackboard] {
+	bt.visitor = v
+	return bt
+}
+
 // Update propagates an update call down the behavior tree.
-func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
+func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
 
 	status := result.Status()
@@ -67,10 +86,12 @@ func (bt *BehaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 		panic(fmt.Errorf("invalid status %v", status))
 	}
 
+	bt.visitor(bt.Root)
+
 	return status
 }
 
-func (bt *BehaviorTree[Blackboard]) EventLoop(evt core.Event) {
+func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) {
 	defer close(bt.events)
 
 	// Put the first event on the queue.
@@ -83,15 +104,12 @@ func (bt *BehaviorTree[Blackboard]) EventLoop(evt core.Event) {
 		case evt := <-bt.events:
 			log.Info().Msgf("Event: %v", evt)
 			bt.Update(evt)
-
-			// TODO: Change to visitor pattern.
-			util.PrintTreeInColor(bt.Root)
 		}
 	}
 }
 
 // String creates a string representation of the behavior tree
 // by traversing it and writing lexical elements to a string.
-func (bt *BehaviorTree[Blackboard]) String() string {
+func (bt *behaviorTree[Blackboard]) String() string {
 	return util.NodeToString(bt.Root)
 }
