@@ -7,7 +7,6 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
-	"github.com/rs/zerolog/log"
 )
 
 // BehaviorTree ...
@@ -102,7 +101,7 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) {
 		case <-bt.ctx.Done():
 			return
 		case evt := <-bt.events:
-			log.Info().Msgf("Event: %v", evt)
+			internal.Logger.Info("Updating with Event", "event", evt)
 			bt.Update(evt)
 		}
 	}

@@ -56,7 +56,6 @@ func TestUpdate(t *testing.T) {
 	for {
 		evt := core.DefaultEvent{}
 		status := tree.Update(evt)
-		util.PrintTreeInColor(tree.Root)
 		if status == core.StatusSuccess {
 			break
 		}

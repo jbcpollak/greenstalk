@@ -1,7 +1,6 @@
 package action
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -14,9 +13,6 @@ import (
 )
 
 func TestSignaller(t *testing.T) {
-	// Synchronous, so does not need to be cancelled.
-	ctx := context.Background()
-
 	sigChan := make(chan bool, 1)
 
 	params := SignallerParams[bool]{
@@ -31,14 +27,17 @@ func TestSignaller(t *testing.T) {
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, core.EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(
+		signalSequence,
+		core.EmptyBlackboard{},
+		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
 
 	evt := core.DefaultEvent{}
 	status := tree.Update(evt)
-	util.PrintTreeInColor(tree.Root)
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -58,9 +57,6 @@ func TestSignaller(t *testing.T) {
 }
 
 func TestAsyncSignaller(t *testing.T) {
-	// Synchronous, so does not need to be cancelled.
-	ctx := context.Background()
-
 	sigChan := make(chan bool)
 
 	params := SignallerParams[bool]{
@@ -75,14 +71,17 @@ func TestAsyncSignaller(t *testing.T) {
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, core.EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(
+		signalSequence,
+		core.EmptyBlackboard{},
+		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
 
 	evt := core.DefaultEvent{}
 	go tree.EventLoop(evt)
-	util.PrintTreeInColor(tree.Root)
 
 	d := time.Duration(100) * time.Millisecond
 

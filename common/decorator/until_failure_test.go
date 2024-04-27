@@ -48,7 +48,12 @@ func TestUntilFailure(t *testing.T) {
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, testSequence, core.EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(
+		testSequence,
+		core.EmptyBlackboard{},
+		greenstalk.WithContext[core.EmptyBlackboard](ctx),
+		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -59,8 +64,6 @@ func TestUntilFailure(t *testing.T) {
 		tree.EventLoop(evt)
 		wg.Done()
 	}()
-
-	util.PrintTreeInColor(tree.Root)
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -126,7 +129,12 @@ func TestAsyncUntilFailure(t *testing.T) {
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, testSequence, core.EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(
+		testSequence,
+		core.EmptyBlackboard{},
+		greenstalk.WithContext[core.EmptyBlackboard](ctx),
+		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -137,8 +145,6 @@ func TestAsyncUntilFailure(t *testing.T) {
 		tree.EventLoop(evt)
 		wg.Done()
 	}()
-
-	util.PrintTreeInColor(tree.Root)
 
 	d := time.Duration(100) * time.Millisecond
 
