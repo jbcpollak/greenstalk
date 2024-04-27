@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/jbcpollak/greenstalk"
-	"github.com/rs/zerolog/log"
 
 	"github.com/jbcpollak/greenstalk/common/composite"
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
 )
 
@@ -34,5 +34,5 @@ func TestFail(t *testing.T) {
 
 	}
 
-	log.Info().Msg("Done!")
+	internal.Logger.Info("Done!")
 }

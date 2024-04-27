@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jbcpollak/greenstalk/core"
-	"github.com/rs/zerolog/log"
+	"github.com/jbcpollak/greenstalk/internal"
 )
 
 type UntilCondition func(status core.ResultDetails) bool
@@ -28,7 +28,7 @@ type repeatUntil[Blackboard any] struct {
 }
 
 func (d *repeatUntil[Blackboard]) repeat(_ context.Context, enqueue core.EnqueueFn) error {
-	log.Info().Msg(d.Name() + ": repeating")
+	internal.Logger.Info("Repeating", "name", d.Name())
 	enqueue(core.TargetNodeEvent(d.Id()))
 	return nil
 }
@@ -39,7 +39,7 @@ func (d *repeatUntil[Blackboard]) Activate(ctx context.Context, bb Blackboard, e
 }
 
 func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	log.Info().Msg("Repeater: Calling child")
+	internal.Logger.Info("Repeater: Calling child")
 	result := core.Update(ctx, d.Child, bb, evt)
 	status := result.Status()
 

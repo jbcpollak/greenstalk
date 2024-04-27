@@ -8,7 +8,6 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
-	"github.com/rs/zerolog/log"
 
 	// Use dot imports to make a tree definition look nice.
 	// Be careful when doing this! These packages export
@@ -39,7 +38,7 @@ var synchronousRoot = Sequence[TestBlackboard](
 )
 
 func TestUpdate(t *testing.T) {
-	log.Info().Msg("Testing synchronous tree...")
+	internal.Logger.Info("Testing synchronous tree...")
 
 	// Synchronous, so does not need to be cancelled.
 	ctx := context.Background()
@@ -63,7 +62,7 @@ func TestUpdate(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 
-	log.Info().Msg("Done!")
+	internal.Logger.Info("Done!")
 }
 
 var countChan = make(chan uint)
@@ -107,7 +106,7 @@ func getCount(d time.Duration) (uint, bool) {
 }
 
 func TestEventLoop(t *testing.T) {
-	log.Info().Msg("Testing asynchronous tree...")
+	internal.Logger.Info("Testing asynchronous tree...")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -130,7 +129,7 @@ func TestEventLoop(t *testing.T) {
 	if ok {
 		t.Errorf("Unexpectedly got count %d", first_halfway)
 	} else {
-		log.Info().Msg("Halfway through first delay counter correctly is 0")
+		internal.Logger.Info("Halfway through first delay counter correctly is 0")
 	}
 
 	// Sleep a bit more
@@ -138,7 +137,7 @@ func TestEventLoop(t *testing.T) {
 	if ok && first_after != 1 {
 		t.Errorf("Expected count to be 1, got %d", first_after)
 	} else {
-		log.Info().Msg("After first delay, counter is 1")
+		internal.Logger.Info("After first delay, counter is 1")
 	}
 
 	// Wait half the delay and verify value is 0
@@ -146,11 +145,11 @@ func TestEventLoop(t *testing.T) {
 	if ok {
 		t.Errorf("Unexpectedly got count %d", second_halfway)
 	} else {
-		log.Info().Msg("Halfway through second delay counter correctly is 1")
+		internal.Logger.Info("Halfway through second delay counter correctly is 1")
 	}
 
 	// Shut it _down_
-	log.Info().Msg("Shutting down...")
+	internal.Logger.Info("Shutting down...")
 	cancel()
 
 	after_cancel, ok := getCount(time.Duration(delay/2) * time.Millisecond)
@@ -160,5 +159,5 @@ func TestEventLoop(t *testing.T) {
 		t.Errorf("Expected to shut down before second tick but got %d", after_cancel)
 	}
 
-	log.Info().Msg("Done!")
+	internal.Logger.Info("Done!")
 }
