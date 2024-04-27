@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/jbcpollak/greenstalk"
-	"github.com/rs/zerolog/log"
 
 	"github.com/jbcpollak/greenstalk/common/composite"
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
 )
 
@@ -43,7 +43,7 @@ func TestSignaller(t *testing.T) {
 
 	select {
 	case c := <-sigChan:
-		log.Info().Msgf("got signal %v", c)
+		internal.Logger.Info("got signal", "signal", c)
 		if !c {
 			t.Errorf("Expected true, got %v", c)
 		}
@@ -87,7 +87,7 @@ func TestAsyncSignaller(t *testing.T) {
 
 	select {
 	case c := <-sigChan:
-		log.Info().Msgf("got count %v", c)
+		internal.Logger.Info("got signal", "signal", c)
 	case <-time.After(d):
 		t.Errorf("Timeout after delaying %v", d)
 	}

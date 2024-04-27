@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
 	"github.com/rs/zerolog/log"
 
@@ -97,10 +98,10 @@ var asynchronousRoot = Sequence(
 func getCount(d time.Duration) (uint, bool) {
 	select {
 	case c := <-countChan:
-		log.Info().Msgf("got count %v", c)
+		internal.Logger.Info("got count", "count", c)
 		return c, true
 	case <-time.After(d):
-		log.Info().Msgf("Timeout after delaying %v", d)
+		internal.Logger.Info("Timeout after delaying", "delay", d)
 		return 0, false
 	}
 }

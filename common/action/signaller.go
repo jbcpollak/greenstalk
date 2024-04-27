@@ -16,7 +16,7 @@ func Signaller[Blackboard any, T any](params SignallerParams[T]) *function_actio
 	fap := FunctionActionParams{
 		Func: func() core.ResultDetails {
 			// TODO: FunctionAction should pass some information to the function
-			// log.Info().Msgf("%s: Signalling", a.Name())
+			// internal.Logger.Info("Signalling", "name", a.Name())
 
 			params.Channel <- params.Signal
 			return core.SuccessResult()

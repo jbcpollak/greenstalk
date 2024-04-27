@@ -10,8 +10,8 @@ import (
 	"github.com/jbcpollak/greenstalk/common/action"
 	"github.com/jbcpollak/greenstalk/common/composite"
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
-	"github.com/rs/zerolog/log"
 )
 
 func TestUntilSuccess(t *testing.T) {
@@ -71,9 +71,9 @@ LOOP:
 	for {
 		select {
 		case c := <-countChan:
-			log.Info().Msgf("got count %v", c)
+			internal.Logger.Info("got count", "count", c)
 		case c := <-sigChan:
-			log.Info().Msgf("loop is finished %v", c)
+			internal.Logger.Info("loop is finished", "signal", c)
 
 			break LOOP
 		case <-time.After(d):
