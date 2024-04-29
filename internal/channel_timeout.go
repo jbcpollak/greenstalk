@@ -5,18 +5,16 @@ import (
 	"time"
 )
 
-func WaitForSignalOrTimeout(sigChan <-chan bool, d time.Duration) error {
-LOOP:
-	for {
-		select {
-		case c := <-sigChan:
-			Logger.Info("loop is finished", "signal", c)
+// Wait until the provided signal is returned or the timeout is reached
+// TODO: replace duration with a context closing
+func WaitForSignalOrTimeout(sigChan <-chan bool, d time.Duration) (bool, error) {
 
-			break LOOP
-		case <-time.After(d):
-			return fmt.Errorf("Timeout after delaying %v", d)
-		}
+	select {
+	case c := <-sigChan:
+		Logger.Info("loop is finished", "signal", c)
+
+		return c, nil
+	case <-time.After(d):
+		return false, fmt.Errorf("timeout after delaying %v", d)
 	}
-
-	return nil
 }
