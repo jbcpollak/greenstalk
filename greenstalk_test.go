@@ -55,8 +55,8 @@ func TestUpdate(t *testing.T) {
 
 	for {
 		evt := core.DefaultEvent{}
-		status := tree.Update(evt)
-		if status == core.StatusSuccess {
+		result := tree.Update(evt)
+		if result.Status() == core.StatusSuccess {
 			break
 		}
 		time.Sleep(100 * time.Millisecond)
@@ -134,7 +134,9 @@ func TestEventLoop(t *testing.T) {
 
 	// Sleep a bit more
 	first_after, ok := getCount(time.Duration(delay/2+10) * time.Millisecond)
-	if ok && first_after != 1 {
+	if !ok {
+		t.Errorf("Expected to get count after delay but got a timeout")
+	} else if first_after != 1 {
 		t.Errorf("Expected count to be 1, got %d", first_after)
 	} else {
 		internal.Logger.Info("After first delay, counter is 1")

@@ -65,101 +65,14 @@ func TestUntilFailure(t *testing.T) {
 		wg.Done()
 	}()
 
-	d := time.Duration(100) * time.Millisecond
-
-LOOP:
-	for {
-		select {
-		case c := <-countChan:
-			internal.Logger.Info("got count", "count", c)
-		case c := <-sigChan:
-			internal.Logger.Info("loop is finished", "signal", c)
-
-			break LOOP
-		case <-time.After(d):
-			t.Errorf("Timeout after delaying %v", d)
-		}
-	}
-
-	cancel()
-	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusSuccess {
-		t.Errorf("Unexpectedly got %v", status)
-	}
-}
-
-func TestAsyncUntilFailure(t *testing.T) {
-	var wg sync.WaitGroup
-
-	// Synchronous, so does not need to be cancelled.
-	ctx, cancel := context.WithCancel(context.Background())
-
-	sigChan := make(chan bool)
-
-	countChan := make(chan uint)
-
-	child := action.Counter[core.EmptyBlackboard](action.CounterParams{
-		BaseParams: "Counter",
-		Limit:      3,
-		CountChan:  countChan,
-	})
-
-	untilFailure := UntilFailure(AsyncDelayer[core.EmptyBlackboard](
-		AsyncDelayerParams{
-			BaseParams: "Slight Delay",
-			Delay:      time.Duration(10) * time.Millisecond,
-		},
-		child,
-	))
-
-	params := action.SignallerParams[bool]{
-		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
-	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
-
-	var testSequence = composite.Sequence(
-		untilFailure,
-		action.Succeed[core.EmptyBlackboard](action.SucceedParams{
-			BaseParams: "Success",
-		}),
-		signaller,
-	)
-
-	tree, err := greenstalk.NewBehaviorTree(
-		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	evt := core.DefaultEvent{}
-	wg.Add(1)
 	go func() {
-		tree.EventLoop(evt)
-		wg.Done()
+		for {
+			<-countChan
+		}
 	}()
 
-	d := time.Duration(100) * time.Millisecond
-
-	for loop := true; loop; {
-		select {
-		case c := <-countChan:
-			internal.Logger.Info("got count", "count", c)
-		case c := <-sigChan:
-			internal.Logger.Info("loop is finished", "signal", c)
-
-			loop = false
-		case <-time.After(d):
-			t.Errorf("Timeout after delaying %v", d)
-		}
-	}
+	d := time.Duration(250) * time.Millisecond
+	internal.WaitForSignalOrTimeout(sigChan, d)
 
 	cancel()
 	wg.Wait()

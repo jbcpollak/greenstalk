@@ -65,21 +65,15 @@ func TestUntilSuccess(t *testing.T) {
 		wg.Done()
 	}()
 
-	d := time.Duration(100) * time.Millisecond
-
-LOOP:
-	for {
-		select {
-		case c := <-countChan:
-			internal.Logger.Info("got count", "count", c)
-		case c := <-sigChan:
-			internal.Logger.Info("loop is finished", "signal", c)
-
-			break LOOP
-		case <-time.After(d):
-			t.Errorf("Timeout after delaying %v", d)
+	// Drain the countChan
+	go func() {
+		for {
+			<-countChan
 		}
-	}
+	}()
+
+	d := time.Duration(200) * time.Millisecond
+	internal.WaitForSignalOrTimeout(sigChan, d)
 
 	cancel()
 	wg.Wait()

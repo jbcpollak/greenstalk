@@ -37,7 +37,7 @@ func TestSignaller(t *testing.T) {
 	}
 
 	evt := core.DefaultEvent{}
-	status := tree.Update(evt)
+	result := tree.Update(evt)
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -51,8 +51,8 @@ func TestSignaller(t *testing.T) {
 		t.Errorf("Timeout after delaying %v", d)
 	}
 
-	if status != core.StatusSuccess {
-		t.Errorf("Unexpectedly got %v", status)
+	if result.Status() != core.StatusSuccess {
+		t.Errorf("Unexpectedly got %v", result)
 	}
 }
 

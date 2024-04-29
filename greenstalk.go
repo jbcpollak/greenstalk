@@ -56,20 +56,19 @@ func (bt *behaviorTree[Blackboard]) WithVisitor(v core.Visitor[Blackboard]) *beh
 }
 
 // Update propagates an update call down the behavior tree.
-func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.Status {
+func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
 
 	status := result.Status()
 	if status == core.StatusError {
-		if details, ok := result.(core.ErrorResultDetails); ok {
-			panic(details.Err)
-		} else {
+		if details, ok := result.(core.ErrorResultDetails); !ok {
 			// Handle if we somehow get an error result that is not an ErrorResultDetails
-			panic(fmt.Errorf("erroneous status encountered %v", details))
+			return core.ErrorResult(fmt.Errorf("erroneous status encountered %v", details))
 		}
 	}
 
 	switch status {
+	case core.StatusError:
 	case core.StatusSuccess:
 		// whatever
 	case core.StatusFailure:
@@ -82,15 +81,15 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.Status {
 			})
 		}
 	default:
-		panic(fmt.Errorf("invalid status %v", status))
+		return core.ErrorResult(fmt.Errorf("invalid status %v", status))
 	}
 
 	bt.visitor(bt.Root)
 
-	return status
+	return result
 }
 
-func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) {
+func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 	defer close(bt.events)
 
 	// Put the first event on the queue.
@@ -99,10 +98,15 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) {
 	for {
 		select {
 		case <-bt.ctx.Done():
-			return
+			return nil
 		case evt := <-bt.events:
 			internal.Logger.Info("Updating with Event", "event", evt)
-			bt.Update(evt)
+			result := bt.Update(evt)
+			if result.Status() == core.StatusError {
+				if details, ok := result.(core.ErrorResultDetails); ok {
+					return details.Err
+				}
+			}
 		}
 	}
 }

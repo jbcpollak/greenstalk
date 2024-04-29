@@ -18,12 +18,15 @@ func Update[Blackboard any](ctx context.Context, node Node[Blackboard], bb Black
 
 	node.SetResult(result)
 
-	if result.Status() != StatusRunning {
-		err := node.Leave(bb)
-		if err != nil {
-			result = ErrorResult(err)
-			node.SetResult(result)
-		}
+	if result.Status() == StatusError ||
+		result.Status() == StatusRunning {
+		return result
+	}
+
+	err := node.Leave(bb)
+	if err != nil {
+		result = ErrorResult(err)
+		node.SetResult(result)
 	}
 
 	return result
