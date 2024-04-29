@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
-	"github.com/rs/zerolog/log"
 
 	// Use dot imports to make a tree definition look nice.
 	// Be careful when doing this! These packages export
@@ -38,27 +38,31 @@ var synchronousRoot = Sequence[TestBlackboard](
 )
 
 func TestUpdate(t *testing.T) {
-	log.Info().Msg("Testing synchronous tree...")
+	internal.Logger.Info("Testing synchronous tree...")
 
 	// Synchronous, so does not need to be cancelled.
 	ctx := context.Background()
 
-	tree, err := NewBehaviorTree(ctx, synchronousRoot, TestBlackboard{id: 42})
+	tree, err := NewBehaviorTree[TestBlackboard](
+		synchronousRoot,
+		TestBlackboard{id: 42},
+		WithContext[TestBlackboard](ctx),
+		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
 
 	for {
 		evt := core.DefaultEvent{}
-		status := tree.Update(evt)
-		util.PrintTreeInColor(tree.Root)
-		if status == core.StatusSuccess {
+		result := tree.Update(evt)
+		if result.Status() == core.StatusSuccess {
 			break
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
 
-	log.Info().Msg("Done!")
+	internal.Logger.Info("Done!")
 }
 
 var countChan = make(chan uint)
@@ -93,23 +97,26 @@ var asynchronousRoot = Sequence(
 func getCount(d time.Duration) (uint, bool) {
 	select {
 	case c := <-countChan:
-		log.Info().Msgf("got count %v", c)
+		internal.Logger.Info("got count", "count", c)
 		return c, true
 	case <-time.After(d):
-		log.Info().Msgf("Timeout after delaying %v", d)
+		internal.Logger.Info("Timeout after delaying", "delay", d)
 		return 0, false
 	}
 }
 
 func TestEventLoop(t *testing.T) {
-	log.Info().Msg("Testing asynchronous tree...")
+	internal.Logger.Info("Testing asynchronous tree...")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	bb := TestBlackboard{id: 42, count: 0}
-
-	tree, err := NewBehaviorTree(ctx, asynchronousRoot, bb)
+	tree, err := NewBehaviorTree(
+		asynchronousRoot, bb,
+		WithContext[TestBlackboard](ctx),
+		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -122,15 +129,17 @@ func TestEventLoop(t *testing.T) {
 	if ok {
 		t.Errorf("Unexpectedly got count %d", first_halfway)
 	} else {
-		log.Info().Msg("Halfway through first delay counter correctly is 0")
+		internal.Logger.Info("Halfway through first delay counter correctly is 0")
 	}
 
 	// Sleep a bit more
 	first_after, ok := getCount(time.Duration(delay/2+10) * time.Millisecond)
-	if ok && first_after != 1 {
+	if !ok {
+		t.Errorf("Expected to get count after delay but got a timeout")
+	} else if first_after != 1 {
 		t.Errorf("Expected count to be 1, got %d", first_after)
 	} else {
-		log.Info().Msg("After first delay, counter is 1")
+		internal.Logger.Info("After first delay, counter is 1")
 	}
 
 	// Wait half the delay and verify value is 0
@@ -138,11 +147,11 @@ func TestEventLoop(t *testing.T) {
 	if ok {
 		t.Errorf("Unexpectedly got count %d", second_halfway)
 	} else {
-		log.Info().Msg("Halfway through second delay counter correctly is 1")
+		internal.Logger.Info("Halfway through second delay counter correctly is 1")
 	}
 
 	// Shut it _down_
-	log.Info().Msg("Shutting down...")
+	internal.Logger.Info("Shutting down...")
 	cancel()
 
 	after_cancel, ok := getCount(time.Duration(delay/2) * time.Millisecond)
@@ -152,5 +161,5 @@ func TestEventLoop(t *testing.T) {
 		t.Errorf("Expected to shut down before second tick but got %d", after_cancel)
 	}
 
-	log.Info().Msg("Done!")
+	internal.Logger.Info("Done!")
 }

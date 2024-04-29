@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jbcpollak/greenstalk/core"
-	"github.com/rs/zerolog/log"
+	"github.com/jbcpollak/greenstalk/internal"
 )
 
 type AsyncDelayerParams struct {
@@ -51,7 +51,7 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 	case <-ctx.Done():
 		return fmt.Errorf("async delay interrupted: %w", ctx.Err())
 	case <-t.C:
-		log.Info().Msgf("Delayed: %v", time.Since(d.start))
+		internal.Logger.Info("Delay Duration", "duration", time.Since(d.start))
 		return enqueue(DelayerFinishedEvent{d.Id(), d.start})
 	}
 }
@@ -60,18 +60,18 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
 	d.start = time.Now()
 
-	log.Info().Msgf("%s: Returning AsyncRunning", d.Name())
+	internal.Logger.Info("Returning AsyncRunning", "name", d.Name())
 
 	return core.InitRunningResult(d.doDelay)
 }
 
 // Tick ...
 func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	log.Info().Msgf("%s: Tick", d.Name())
+	internal.Logger.Info("Tick", "name", d.Name())
 
 	if dfe, ok := evt.(DelayerFinishedEvent); ok {
 		if dfe.TargetNodeId() == d.Id() {
-			log.Info().Msgf("%s: DelayerFinishedEvent", d.Name())
+			internal.Logger.Info("DelayerFinishedEvent", "name", d.Name())
 			return core.Update(ctx, d.Child, bb, evt)
 		}
 	}

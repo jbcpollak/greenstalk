@@ -10,8 +10,8 @@ import (
 	"github.com/jbcpollak/greenstalk/common/action"
 	"github.com/jbcpollak/greenstalk/common/composite"
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
-	"github.com/rs/zerolog/log"
 )
 
 func TestUntilSuccess(t *testing.T) {
@@ -48,7 +48,12 @@ func TestUntilSuccess(t *testing.T) {
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, testSequence, core.EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(
+		testSequence,
+		core.EmptyBlackboard{},
+		greenstalk.WithContext[core.EmptyBlackboard](ctx),
+		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -60,23 +65,15 @@ func TestUntilSuccess(t *testing.T) {
 		wg.Done()
 	}()
 
-	util.PrintTreeInColor(tree.Root)
-
-	d := time.Duration(100) * time.Millisecond
-
-LOOP:
-	for {
-		select {
-		case c := <-countChan:
-			log.Info().Msgf("got count %v", c)
-		case c := <-sigChan:
-			log.Info().Msgf("loop is finished %v", c)
-
-			break LOOP
-		case <-time.After(d):
-			t.Errorf("Timeout after delaying %v", d)
+	// Drain the countChan
+	go func() {
+		for {
+			<-countChan
 		}
-	}
+	}()
+
+	d := time.Duration(200) * time.Millisecond
+	internal.WaitForSignalOrTimeout(sigChan, d)
 
 	cancel()
 	wg.Wait()

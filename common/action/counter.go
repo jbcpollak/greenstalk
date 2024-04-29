@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jbcpollak/greenstalk/core"
-	"github.com/rs/zerolog/log"
+	"github.com/jbcpollak/greenstalk/internal"
 )
 
 type CounterParams struct {
@@ -32,7 +32,7 @@ func (a *counter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt c
 }
 
 func (a *counter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	log.Info().Msgf("%s: Incrementing count", a.Name())
+	internal.Logger.Info("Incrementing count", "name", a.Name())
 	a.currentValue++
 	a.Params.CountChan <- a.currentValue
 

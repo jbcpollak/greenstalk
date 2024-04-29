@@ -32,7 +32,7 @@ func appendNode[Blackboard any](node core.Walkable[Blackboard], level int, b *st
 // PrintTreeInColor prints the tree with colors representing node state.
 //
 // Red = Failure, Yellow = Running, Green = Success, Magenta = Invalid.
-func PrintTreeInColor[Blackboard any](node core.Node[Blackboard]) {
+func PrintTreeInColor[Blackboard any](node core.Walkable[Blackboard]) {
 	node.Walk(printInColor, 0)
 	fmt.Println()
 }

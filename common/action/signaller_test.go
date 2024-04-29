@@ -1,22 +1,18 @@
 package action
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/jbcpollak/greenstalk"
-	"github.com/rs/zerolog/log"
 
 	"github.com/jbcpollak/greenstalk/common/composite"
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 	"github.com/jbcpollak/greenstalk/util"
 )
 
 func TestSignaller(t *testing.T) {
-	// Synchronous, so does not need to be cancelled.
-	ctx := context.Background()
-
 	sigChan := make(chan bool, 1)
 
 	params := SignallerParams[bool]{
@@ -31,20 +27,23 @@ func TestSignaller(t *testing.T) {
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, core.EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(
+		signalSequence,
+		core.EmptyBlackboard{},
+		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
 
 	evt := core.DefaultEvent{}
-	status := tree.Update(evt)
-	util.PrintTreeInColor(tree.Root)
+	result := tree.Update(evt)
 
 	d := time.Duration(100) * time.Millisecond
 
 	select {
 	case c := <-sigChan:
-		log.Info().Msgf("got signal %v", c)
+		internal.Logger.Info("got signal", "signal", c)
 		if !c {
 			t.Errorf("Expected true, got %v", c)
 		}
@@ -52,15 +51,12 @@ func TestSignaller(t *testing.T) {
 		t.Errorf("Timeout after delaying %v", d)
 	}
 
-	if status != core.StatusSuccess {
-		t.Errorf("Unexpectedly got %v", status)
+	if result.Status() != core.StatusSuccess {
+		t.Errorf("Unexpectedly got %v", result)
 	}
 }
 
 func TestAsyncSignaller(t *testing.T) {
-	// Synchronous, so does not need to be cancelled.
-	ctx := context.Background()
-
 	sigChan := make(chan bool)
 
 	params := SignallerParams[bool]{
@@ -75,20 +71,23 @@ func TestAsyncSignaller(t *testing.T) {
 		signaller,
 	)
 
-	tree, err := greenstalk.NewBehaviorTree(ctx, signalSequence, core.EmptyBlackboard{})
+	tree, err := greenstalk.NewBehaviorTree(
+		signalSequence,
+		core.EmptyBlackboard{},
+		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+	)
 	if err != nil {
 		panic(err)
 	}
 
 	evt := core.DefaultEvent{}
 	go tree.EventLoop(evt)
-	util.PrintTreeInColor(tree.Root)
 
 	d := time.Duration(100) * time.Millisecond
 
 	select {
 	case c := <-sigChan:
-		log.Info().Msgf("got count %v", c)
+		internal.Logger.Info("got signal", "signal", c)
 	case <-time.After(d):
 		t.Errorf("Timeout after delaying %v", d)
 	}
