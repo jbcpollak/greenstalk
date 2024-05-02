@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/internal"
 
 	"github.com/fatih/color"
 )
@@ -46,6 +47,22 @@ func printInColor[Blackboard any](node core.Walkable[Blackboard], level int) {
 
 	fmt.Println(indent + node.String() + " " + symbol)
 	color.Unset()
+}
+
+// Logs the tree to a logger
+func PrintTreeToLog[Blackboard any](node core.Walkable[Blackboard]) {
+	node.Walk(printToLog, 0)
+	fmt.Println()
+}
+
+func printToLog[Blackboard any](node core.Walkable[Blackboard], level int) {
+	indent := strings.Repeat("    ", level)
+
+	status := node.Result().Status()
+	symbol := symbolForStatus[status]
+
+	internal.Logger.Info(indent + node.String() + " " + symbol)
+
 }
 
 var colorForStatus = map[core.Status]color.Attribute{
