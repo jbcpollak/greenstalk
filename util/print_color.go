@@ -52,7 +52,6 @@ func printInColor[Blackboard any](node core.Walkable[Blackboard], level int) {
 // Logs the tree to a logger
 func PrintTreeToLog[Blackboard any](node core.Walkable[Blackboard]) {
 	node.Walk(printToLog, 0)
-	fmt.Println()
 }
 
 func printToLog[Blackboard any](node core.Walkable[Blackboard], level int) {
