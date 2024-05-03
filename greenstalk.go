@@ -50,11 +50,6 @@ func NewBehaviorTree[Blackboard any](
 	return tree, nil
 }
 
-func (bt *behaviorTree[Blackboard]) WithVisitor(v core.Visitor[Blackboard]) *behaviorTree[Blackboard] {
-	bt.visitor = v
-	return bt
-}
-
 // Update propagates an update call down the behavior tree.
 func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
