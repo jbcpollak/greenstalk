@@ -100,6 +100,10 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 			if result.Status() == core.StatusError {
 				if details, ok := result.(core.ErrorResultDetails); ok {
 					return details.Err
+				} else {
+					// we should not be able to get here because currently Update ensures that an error status always
+					// has ErrorResultDetails, but if that ever changes and we get here, we should still emit an error
+					return fmt.Errorf("BT Update returned an error with no details %v", details)
 				}
 			}
 		}
