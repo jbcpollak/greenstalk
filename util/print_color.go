@@ -60,7 +60,7 @@ func printToLog[Blackboard any](node core.Walkable[Blackboard], level int) {
 	status := node.Result().Status()
 	symbol := symbolForStatus[status]
 
-	internal.Logger.Info(indent + node.String() + " " + symbol)
+	internal.Logger.Info(indent+node.String()+" "+symbol, "GSTreeLog", true)
 
 }
 
