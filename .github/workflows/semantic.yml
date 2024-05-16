@@ -1,4 +1,4 @@
-name: "Semantic PR and Commit Messages"
+name: "Semantic PR"
 
 on:
   pull_request:
