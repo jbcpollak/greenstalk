@@ -31,6 +31,14 @@ func (e targetNodeEvent) TargetNodeId() uuid.UUID {
 	return e.targetNodeId
 }
 
+type ErrorEvent struct {
+	Err error
+}
+
+func (e ErrorEvent) TargetNodeId() uuid.UUID {
+	return uuid.Nil
+}
+
 // Preliminary interface to work around intermediate types like
 // composite, decorator, etc not inplementing Enter/Tick/Leave
 type Walkable[Blackboard any] interface {

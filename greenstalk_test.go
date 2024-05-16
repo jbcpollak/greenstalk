@@ -50,7 +50,7 @@ func TestUpdate(t *testing.T) {
 		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	for {
@@ -118,11 +118,16 @@ func TestEventLoop(t *testing.T) {
 		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	go tree.EventLoop(evt)
+	go func() {
+		err := tree.EventLoop(evt)
+		if err != nil {
+			t.Errorf("Unexpectedly got %v", err)
+		}
+	}()
 
 	// Wait half the delay and verify no value sent
 	first_halfway, ok := getCount(time.Duration(delay/2) * time.Millisecond)

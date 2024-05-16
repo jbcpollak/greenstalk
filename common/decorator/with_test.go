@@ -72,19 +72,25 @@ func TestWith(t *testing.T) {
 		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
 	wg.Add(1)
 	go func() {
-		tree.EventLoop(evt)
+		err := tree.EventLoop(evt)
+		if err != nil {
+			t.Errorf("Unexpectedly got %v", err)
+		}
 		wg.Done()
 	}()
 
 	d := time.Duration(100) * time.Millisecond
 
-	internal.WaitForSignalOrTimeout(sigChan, d)
+	signal, err := internal.WaitForSignalOrTimeout(sigChan, d)
+	if (err != nil) || !signal {
+		t.Errorf("Unexpectedly got %v", signal)
+	}
 
 	cancel()
 	wg.Wait()
@@ -102,14 +108,13 @@ func TestWith(t *testing.T) {
 	}
 }
 
-
 type errorCloser struct {
 	closeCalled *bool
 }
 
 func (t errorCloser) Close() error {
 	*t.closeCalled = true
-	return fmt.Errorf("This is an explected error")
+	return fmt.Errorf("This is an expected error")
 }
 
 func TestWithCloserError(t *testing.T) {
@@ -159,19 +164,25 @@ func TestWithCloserError(t *testing.T) {
 		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
 	wg.Add(1)
 	go func() {
-		tree.EventLoop(evt)
+		err := tree.EventLoop(evt)
+		if err == nil {
+			t.Errorf("We are expecting an error here")
+		}
 		wg.Done()
 	}()
 
 	d := time.Duration(100) * time.Millisecond
 
-	internal.WaitForSignalOrTimeout(sigChan, d)
+	signal, err := internal.WaitForSignalOrTimeout(sigChan, d)
+	if err == nil {
+		t.Errorf("Was expecting to timeout here but got %v", signal)
+	}
 
 	cancel()
 	wg.Wait()
@@ -234,29 +245,31 @@ func TestWithInitError(t *testing.T) {
 		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Should net error here %v", err)
 	}
 
 	evt := core.DefaultEvent{}
 	wg.Add(1)
 	go func() {
 		err = tree.EventLoop(evt)
+		if err.Error() != "This is an error" {
+			t.Errorf("Error does not have correct contents: %v", err)
+		}
 		wg.Done()
 	}()
 
 	d := time.Duration(100) * time.Millisecond
 
-	internal.WaitForSignalOrTimeout(sigChan, d)
+	signal, err := internal.WaitForSignalOrTimeout(sigChan, d)
+	if err == nil {
+		t.Errorf("Was expecting to timeout here but got %v", signal)
+	}
 
 	cancel()
 	wg.Wait()
 	status := tree.Root.Result().Status()
 	if status != core.StatusError {
 		t.Errorf("Unexpectedly got %v", status)
-	}
-
-	if err.Error() != "This is an error" {
-		t.Errorf("Error does not have correct contents: %v", err)
 	}
 
 	if *childCalled {

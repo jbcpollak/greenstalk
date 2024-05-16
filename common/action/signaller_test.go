@@ -33,7 +33,7 @@ func TestSignaller(t *testing.T) {
 		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
@@ -77,11 +77,16 @@ func TestAsyncSignaller(t *testing.T) {
 		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	go tree.EventLoop(evt)
+	go func() {
+		err := tree.EventLoop(evt)
+		if err != nil {
+			t.Errorf("Unexpectedly got %v", err)
+		}
+	}()
 
 	d := time.Duration(100) * time.Millisecond
 

@@ -55,13 +55,16 @@ func TestUntilFailure(t *testing.T) {
 		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
 	wg.Add(1)
 	go func() {
-		tree.EventLoop(evt)
+		err = tree.EventLoop(evt)
+		if err != nil {
+			t.Errorf("Unexpectedly got %v", err)
+		}
 		wg.Done()
 	}()
 
@@ -72,7 +75,10 @@ func TestUntilFailure(t *testing.T) {
 	}()
 
 	d := time.Duration(250) * time.Millisecond
-	internal.WaitForSignalOrTimeout(sigChan, d)
+	signal, timeout_err := internal.WaitForSignalOrTimeout(sigChan, d)
+	if (timeout_err != nil) || !signal {
+		t.Errorf("Unexpectedly got %v", signal)
+	}
 
 	cancel()
 	wg.Wait()
