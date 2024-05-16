@@ -13,3 +13,4 @@
             uses: namchee/conventional-pr@v0.15.4
             with:
               access_token: ${{ secrets.GITHUB_TOKEN }}
+              issue: false # Do not require an issue for now
