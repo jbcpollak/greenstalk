@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - feat/release-3
 
 jobs:
   release:
@@ -33,4 +34,5 @@ jobs:
       uses: go-semantic-release/action@v1
       with:
         hooks: goreleaser
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
