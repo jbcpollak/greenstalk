@@ -24,7 +24,7 @@ func TestFail(t *testing.T) {
 		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
-		panic(err)
+		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}

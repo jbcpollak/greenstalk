@@ -29,8 +29,7 @@ type repeatUntil[Blackboard any] struct {
 
 func (d *repeatUntil[Blackboard]) repeat(_ context.Context, enqueue core.EnqueueFn) error {
 	internal.Logger.Info("Repeating", "name", d.Name())
-	enqueue(core.TargetNodeEvent(d.Id()))
-	return nil
+	return enqueue(core.TargetNodeEvent(d.Id()))
 }
 
 func (d *repeatUntil[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
