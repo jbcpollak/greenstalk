@@ -6,7 +6,7 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-func SwapResult[Blackboard any](child core.Node[Blackboard], swapFrom core.Status, swapTo core.Status) core.Node[Blackboard] {
+func SwapResult[Blackboard any](swapFrom core.Status, swapTo core.Status, child core.Node[Blackboard]) core.Node[Blackboard] {
 	if swapFrom != core.StatusSuccess && swapFrom != core.StatusFailure {
 		panic("cannot swap from statuses other than Success or Failure")
 	}
