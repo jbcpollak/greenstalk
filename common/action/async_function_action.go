@@ -1,0 +1,59 @@
+package action
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/jbcpollak/greenstalk/core"
+)
+
+type AsyncFunctionActionParams struct {
+	core.BaseParams
+	Func func() core.ResultDetails
+}
+
+type asyncFunctionFinishedEvent struct {
+	targetNodeId uuid.UUID
+}
+
+func (e asyncFunctionFinishedEvent) TargetNodeId() uuid.UUID {
+	return e.targetNodeId
+}
+
+// Same as FunctionAction but the function is executed in a separate goroutine
+func AsyncFunctionAction[Blackboard any](params AsyncFunctionActionParams) *asyncFunctionAction[Blackboard] {
+	base := core.NewLeaf[Blackboard](params)
+	return &asyncFunctionAction[Blackboard]{Leaf: base}
+}
+
+type asyncFunctionAction[Blackboard any] struct {
+	core.Leaf[Blackboard, AsyncFunctionActionParams]
+
+	fnResult core.ResultDetails
+}
+
+func (a *asyncFunctionAction[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+	return core.InitRunningResult(a.performFunction)
+}
+
+func (a *asyncFunctionAction[Blackboard]) performFunction(_ context.Context, enqueue core.EnqueueFn) error {
+	a.fnResult = a.Params.Func()
+
+	return enqueue(asyncFunctionFinishedEvent{
+		targetNodeId: a.Id(),
+	})
+}
+
+func (a *asyncFunctionAction[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+	if afe, ok := evt.(asyncFunctionFinishedEvent); ok {
+		if afe.TargetNodeId() == a.Id() {
+			return a.fnResult
+		}
+	}
+
+	return core.RunningResult()
+}
+
+func (a *asyncFunctionAction[Blackboard]) Leave(bb Blackboard) error {
+	return nil
+}

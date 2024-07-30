@@ -13,7 +13,7 @@ type FunctionActionParams struct {
 }
 
 // FunctionAction executes the provided function when activated and returns its result. Note that the function is executed
-// synchronously so it must not block or the tree becomes unresponsive. Use AsyncFunctionAction (TODO) for long running functions.
+// synchronously so it must not block or the tree becomes unresponsive. Use AsyncFunctionAction for long running functions.
 func FunctionAction[Blackboard any](params FunctionActionParams) *function_action[Blackboard] {
 	base := core.NewLeaf[Blackboard](params)
 	return &function_action[Blackboard]{Leaf: base}
