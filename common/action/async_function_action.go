@@ -2,6 +2,7 @@ package action
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jbcpollak/greenstalk/core"
@@ -20,7 +21,8 @@ func (e asyncFunctionFinishedEvent) TargetNodeId() uuid.UUID {
 	return e.targetNodeId
 }
 
-// Same as FunctionAction but the function is executed in a separate goroutine
+// Same as FunctionAction but the function is executed in a separate goroutine. Returns the same status as the function,
+// except StatusRunning which return an ErrorResult.
 func AsyncFunctionAction[Blackboard any](params AsyncFunctionActionParams) *asyncFunctionAction[Blackboard] {
 	base := core.NewLeaf[Blackboard](params)
 	return &asyncFunctionAction[Blackboard]{Leaf: base}
@@ -38,6 +40,10 @@ func (a *asyncFunctionAction[Blackboard]) Activate(ctx context.Context, bb Black
 
 func (a *asyncFunctionAction[Blackboard]) performFunction(_ context.Context, enqueue core.EnqueueFn) error {
 	a.fnResult = a.Params.Func()
+	if a.fnResult.Status() == core.StatusRunning {
+
+		a.fnResult = core.ErrorResult(fmt.Errorf("async function returned invalid status of StatusRunning"))
+	}
 
 	return enqueue(asyncFunctionFinishedEvent{
 		targetNodeId: a.Id(),
