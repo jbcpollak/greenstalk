@@ -41,7 +41,6 @@ func (a *asyncFunctionAction[Blackboard]) Activate(ctx context.Context, bb Black
 func (a *asyncFunctionAction[Blackboard]) performFunction(_ context.Context, enqueue core.EnqueueFn) error {
 	a.fnResult = a.Params.Func()
 	if a.fnResult.Status() == core.StatusRunning {
-
 		a.fnResult = core.ErrorResult(fmt.Errorf("async function returned invalid status of StatusRunning"))
 	}
 
