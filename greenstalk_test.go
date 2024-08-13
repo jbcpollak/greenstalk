@@ -2,6 +2,8 @@ package greenstalk
 
 import (
 	"context"
+	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -167,4 +169,74 @@ func TestEventLoop(t *testing.T) {
 	}
 
 	internal.Logger.Info("Done!")
+}
+
+type errorAsyncNode struct {
+	core.Leaf[TestBlackboard, core.BaseParams]
+	wg *sync.WaitGroup
+}
+
+func (a *errorAsyncNode) Activate(ctx context.Context, bb TestBlackboard, evt core.Event) core.ResultDetails {
+	errorFunc := func(ctx context.Context, enqueue core.EnqueueFn) error {
+		a.wg.Done()
+		return fmt.Errorf("Expected error during tests")
+	}
+	return core.InitRunningResult(errorFunc)
+}
+
+func (a *errorAsyncNode) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) core.ResultDetails {
+	panic("Should never get ticked during tests")
+}
+
+func (a *errorAsyncNode) Leave(bb TestBlackboard) error {
+	panic("Should never leave during tests")
+}
+
+func makeErrorAsyncNode(wg *sync.WaitGroup) *errorAsyncNode {
+	base := core.NewLeaf[TestBlackboard](
+		core.BaseParams("ErrorAsyncNode"),
+	)
+	return &errorAsyncNode{
+		Leaf: base,
+		wg:   wg,
+	}
+}
+
+func TestAsyncErrorInTree(t *testing.T) {
+	internal.Logger.Info("Testing handling errors returned by async functions...")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	bb := TestBlackboard{id: 42, count: 0}
+
+	nodeWG := sync.WaitGroup{}
+	nodeWG.Add(1)
+	errorFuncNode := makeErrorAsyncNode(&nodeWG)
+	tree, err := NewBehaviorTree(
+		errorFuncNode, bb,
+		WithContext[TestBlackboard](ctx),
+		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+	)
+	if err != nil {
+		t.Errorf("Unexpectedly got %v", err)
+	}
+
+	treeWG := sync.WaitGroup{}
+	treeWG.Add(1)
+	evt := core.DefaultEvent{}
+	go func() {
+		err := tree.EventLoop(evt)
+		if err == nil || err.Error() != "Expected error during tests" {
+			t.Errorf("Tree should have returned an expected error")
+		}
+		treeWG.Done()
+	}()
+
+	nodeWG.Wait()
+	treeWG.Wait()
+
+	cancel()
+
+	t.Logf("Tree terminated cleanly")
 }

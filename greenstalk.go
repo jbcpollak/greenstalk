@@ -104,6 +104,9 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 		case <-bt.ctx.Done():
 			return nil
 		case evt := <-bt.events:
+			if errEvt, ok := evt.(core.ErrorEvent); ok {
+				return errEvt.Err
+			}
 			internal.Logger.Info("Updating with Event", "event", evt)
 			result := bt.Update(evt)
 			if result.Status() == core.StatusError {
