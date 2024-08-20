@@ -14,6 +14,11 @@ func (p *StateProvider[T]) Set(val T) {
 	p.value = val
 }
 
+func (p *StateProvider[T]) Reset() {
+	var zeroValue T
+	p.value = zeroValue
+}
+
 // Creates a state provider of a constant value that never changes
 func MakeConstStateProvider[T any](val T) StateGetter[T] {
 	return &constStateProvider[T]{value: val}
