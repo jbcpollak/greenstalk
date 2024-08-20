@@ -38,4 +38,5 @@ type StateGetter[T any] interface {
 
 type StateSetter[T any] interface {
 	Set(val T)
+	Reset()
 }
