@@ -37,6 +37,10 @@ type StateGetter[T any] interface {
 }
 
 type StateSetter[T any] interface {
+	StateResetter
 	Set(val T)
+}
+
+type StateResetter interface {
 	Reset()
 }

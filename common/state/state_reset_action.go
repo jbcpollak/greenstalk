@@ -6,7 +6,7 @@ import (
 )
 
 // This node resets all provided states and returns SuccessStatus
-func MakeStateResetAction[Blackboard any, setterT any](states ...StateSetter[setterT]) core.Node[Blackboard] {
+func MakeStateResetAction[Blackboard any](states ...StateResetter) core.Node[Blackboard] {
 	return action.FunctionAction[Blackboard](action.FunctionActionParams{
 		BaseParams: "stateReset",
 		Func: func() core.ResultDetails {
