@@ -6,7 +6,7 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-func RuntimeSequence[Blackboard any](childrenFn func() []core.Node[Blackboard]) core.Node[Blackboard] {
+func RuntimeSequence[Blackboard any](childrenFn func() ([]core.Node[Blackboard], error)) core.Node[Blackboard] {
 	base := core.NewRuntimeComposite(core.BaseParams("RuntimeSequence"), childrenFn)
 	return &runtimeSequence[Blackboard]{RuntimeComposite: base}
 }
@@ -16,7 +16,13 @@ type runtimeSequence[Blackboard any] struct {
 }
 
 func (s *runtimeSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	s.Children = s.ChildrenFn()
+	children, err := s.ChildrenFn()
+
+	if err != nil {
+		return core.ErrorResult(err)
+	}
+
+	s.Children = children
 	s.CurrentChild = 0
 
 	// Tick as expected

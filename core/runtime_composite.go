@@ -2,12 +2,12 @@ package core
 
 type RuntimeComposite[Blackboard any, P Params] struct {
 	BaseNode[P]
-	ChildrenFn   func() []Node[Blackboard]
+	ChildrenFn   func() ([]Node[Blackboard], error)
 	Children     []Node[Blackboard]
 	CurrentChild int
 }
 
-func NewRuntimeComposite[Blackboard any, P Params](params P, childrenFn func() []Node[Blackboard]) RuntimeComposite[Blackboard, P] {
+func NewRuntimeComposite[Blackboard any, P Params](params P, childrenFn func() ([]Node[Blackboard], error)) RuntimeComposite[Blackboard, P] {
 	return RuntimeComposite[Blackboard, P]{
 		BaseNode:   newBaseNode(CategoryComposite, params),
 		ChildrenFn: childrenFn,
