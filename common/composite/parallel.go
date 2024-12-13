@@ -72,6 +72,9 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 			if initRunningResult, ok := result.(core.InitRunningResultDetails); ok {
 				runningResultDetails = append(runningResultDetails, initRunningResult)
 			}
+		case core.StatusError:
+			// any errors are returned immediately so the whole tree can error out
+			return result
 		}
 	}
 
