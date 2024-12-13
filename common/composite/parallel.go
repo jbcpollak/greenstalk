@@ -47,6 +47,7 @@ func (s *parallel[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt 
 }
 
 func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+	runningResultDetails := []core.InitRunningResultDetails{}
 
 	// Update every child that has not completed yet every tick.
 	for i := 0; i < len(s.Children); i++ {
@@ -67,6 +68,10 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 		case core.StatusFailure:
 			s.fail++
 			s.completed[i] = true
+		case core.StatusRunning:
+			if initRunningResult, ok := result.(core.InitRunningResultDetails); ok {
+				runningResultDetails = append(runningResultDetails, initRunningResult)
+			}
 		}
 	}
 
@@ -76,7 +81,12 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	if s.fail >= s.failReq {
 		return core.FailureResult()
 	}
-	return core.RunningResult()
+
+	if len(runningResultDetails) > 0 {
+		return core.InitRunningResultsCollection(runningResultDetails)
+	} else {
+		return core.RunningResult()
+	}
 }
 
 func (s *parallel[Blackboard]) Leave(bb Blackboard) error {

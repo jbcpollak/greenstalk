@@ -63,6 +63,19 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 		}
 	}
 
+	handleRunningResultDetails := func(running core.InitRunningResultDetails) {
+		err := running.RunningFn(bt.ctx, func(evt core.Event) error {
+			bt.events <- evt
+			return nil
+		})
+		// If we aren't shutting down, feed the error back through the event loop.
+		if err != nil && !errors.Is(err, context.Canceled) {
+			internal.Logger.Error("Error in running function", "err", err)
+			// TODO: put sender's ID in the event so it can be notified
+			bt.events <- core.ErrorEvent{Err: err}
+		}
+	}
+
 	switch status {
 	case core.StatusError:
 	case core.StatusSuccess:
@@ -71,18 +84,11 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 		// whatever
 	case core.StatusRunning:
 		if running, ok := result.(core.InitRunningResultDetails); ok {
-			go func() {
-				err := running.RunningFn(bt.ctx, func(evt core.Event) error {
-					bt.events <- evt
-					return nil
-				})
-				// If we aren't shutting down, feed the error back through the event loop.
-				if err != nil && !errors.Is(err, context.Canceled) {
-					internal.Logger.Error("Error in running function", "err", err)
-					// TODO: put sender's ID in the event so it can be notified
-					bt.events <- core.ErrorEvent{Err: err}
-				}
-			}()
+			go handleRunningResultDetails(running)
+		} else if runnings, ok := result.(core.InitRunningResultsDetailsCollection); ok {
+			for _, running := range runnings.Results {
+				go handleRunningResultDetails(running)
+			}
 		}
 	default:
 		return core.ErrorResult(fmt.Errorf("invalid status %v", status))

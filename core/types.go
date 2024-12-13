@@ -64,6 +64,16 @@ type InitRunningResultDetails struct {
 
 func (InitRunningResultDetails) Status() Status { return StatusRunning }
 
+func InitRunningResultsCollection(runningResults []InitRunningResultDetails) InitRunningResultsDetailsCollection {
+	return InitRunningResultsDetailsCollection{runningResults}
+}
+
+type InitRunningResultsDetailsCollection struct {
+	Results []InitRunningResultDetails
+}
+
+func (InitRunningResultsDetailsCollection) Status() Status { return StatusRunning }
+
 func ErrorResult(err error) ErrorResultDetails {
 	return ErrorResultDetails{err}
 }
