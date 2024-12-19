@@ -43,6 +43,10 @@ func (s *parallel[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt 
 	s.succ = 0
 	s.fail = 0
 
+	for i := 0; i < len(s.Children); i++ {
+		s.completed[i] = false
+	}
+
 	return s.Tick(ctx, bb, evt)
 }
 
