@@ -1,5 +1,7 @@
 package state
 
+import "sync"
+
 // State Providers allow tree nodes to share data between each other by either writing
 // the state value or reading from it.
 type StateProvider[T any] struct {
@@ -43,4 +45,9 @@ type StateSetter[T any] interface {
 
 type StateResetter interface {
 	Reset()
+}
+
+type SynchronizedStateProvider[T any] struct {
+	StateProvider[T]
+	sync.Mutex
 }
