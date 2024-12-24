@@ -75,6 +75,8 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 		case core.StatusRunning:
 			if initRunningResult, ok := result.(core.InitRunningResultDetails); ok {
 				runningResultDetails = append(runningResultDetails, initRunningResult)
+			} else if initRunningResultsCollection, ok := result.(core.InitRunningResultsDetailsCollection); ok {
+				runningResultDetails = append(runningResultDetails, initRunningResultsCollection.Results...)
 			}
 		case core.StatusError:
 			// any errors are returned immediately so the whole tree can error out
