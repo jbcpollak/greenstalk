@@ -8,6 +8,8 @@ import (
 
 	"github.com/jbcpollak/greenstalk"
 	"github.com/jbcpollak/greenstalk/common/action"
+	"github.com/jbcpollak/greenstalk/common/decorator"
+	"github.com/jbcpollak/greenstalk/common/state"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
@@ -108,5 +110,155 @@ func TestParallelExecution(t *testing.T) {
 
 	if !((messages[2].name == action1Name && messages[3].name == action2Name) || (messages[2].name == action2Name && messages[3].name == action1Name)) {
 		t.Errorf("Unexpected order of actions")
+	}
+}
+
+func TestParallelCompletionReset(t *testing.T) {
+	// we need to activate the same Parallel node 2+ times - before the fix
+	// the second time around the node would hang without any child nodes being called
+
+	counterParam := state.StateProvider[int]{}
+	counterParam.Set(0)
+
+	treeNode := decorator.RepeatUntil(decorator.RepeatUntilParams{
+		BaseParams: "loop",
+		Until: func(status core.ResultDetails) bool {
+			if status.Status() != core.StatusSuccess {
+				panic("Unexpected status")
+			}
+
+			count := counterParam.Get()
+			return count > 1
+		}},
+		Sequence(
+			Parallel(2, 1,
+				action.Succeed[core.EmptyBlackboard](action.SucceedParams{BaseParams: "success1"}),
+				action.Succeed[core.EmptyBlackboard](action.SucceedParams{BaseParams: "success2"}),
+			),
+			action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+				BaseParams: "increment",
+				Func: func() core.ResultDetails {
+					count := counterParam.Get()
+					count++
+					counterParam.Set(count)
+					return core.SuccessResult()
+				},
+			}),
+		),
+	)
+
+	sigChan := make(chan bool)
+	params := action.SignallerParams[bool]{
+		BaseParams: "Signaller",
+
+		Channel: sigChan,
+		Signal:  true,
+	}
+	signaller := action.Signaller[core.EmptyBlackboard](params)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	tree, err := greenstalk.NewBehaviorTree(
+		Sequence(treeNode, signaller),
+		core.EmptyBlackboard{},
+		greenstalk.WithContext[core.EmptyBlackboard](ctx),
+	)
+	if err != nil {
+		t.Errorf("Unexpectedly got %v", err)
+	}
+
+	evt := core.DefaultEvent{}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		err = tree.EventLoop(evt)
+		if err != nil {
+			t.Errorf("Unexpectedly got %v", err)
+		}
+		wg.Done()
+	}()
+
+	signal := <-sigChan
+	if !signal {
+		t.Errorf("Unexpectedly got signal %v", signal)
+	}
+
+	cancel()
+
+	wg.Wait()
+
+	// before the fix, the behavior tree would be stuck in running, and RepeatUntil verifies that the parallel node return success
+	// so if the behavior tree exits cleanly, the test is comprehensive enough
+
+}
+
+func TestNestedParallels(t *testing.T) {
+	// When a parallel node returns running functions, it wraps them in a collection
+	// This tests that a top level parallel node can handle the running function collections
+	// returned by child parallel nodes
+
+	synchronizedCounter := state.SynchronizedStateProvider[int]{}
+
+	makeAsyncIncrement := func() core.Node[core.EmptyBlackboard] {
+		return action.AsyncFunctionAction[core.EmptyBlackboard](action.AsyncFunctionActionParams{
+			BaseParams: "increment",
+			Func: func() core.ResultDetails {
+				synchronizedCounter.Lock()
+				defer synchronizedCounter.Unlock()
+				synchronizedCounter.Set(synchronizedCounter.Get() + 1)
+				return core.SuccessResult()
+			},
+		})
+	}
+
+	treeNode := Parallel(2, 1,
+		Parallel(2, 1, makeAsyncIncrement(), makeAsyncIncrement()),
+		Parallel(2, 1, makeAsyncIncrement(), makeAsyncIncrement()),
+	)
+
+	sigChan := make(chan bool)
+	params := action.SignallerParams[bool]{
+		BaseParams: "Signaller",
+
+		Channel: sigChan,
+		Signal:  true,
+	}
+	signaller := action.Signaller[core.EmptyBlackboard](params)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	tree, err := greenstalk.NewBehaviorTree(
+		Sequence(treeNode, signaller),
+		core.EmptyBlackboard{},
+		greenstalk.WithContext[core.EmptyBlackboard](ctx),
+	)
+	if err != nil {
+		t.Errorf("Unexpectedly got %v", err)
+	}
+
+	evt := core.DefaultEvent{}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		err = tree.EventLoop(evt)
+		if err != nil {
+			t.Errorf("Unexpectedly got %v", err)
+		}
+		wg.Done()
+	}()
+
+	signal := <-sigChan
+	if !signal {
+		t.Errorf("Unexpectedly got signal %v", signal)
+	}
+
+	cancel()
+
+	wg.Wait()
+
+	if synchronizedCounter.Get() != 4 {
+		t.Errorf("Expected 4, got %d", synchronizedCounter.Get())
 	}
 }
