@@ -9,7 +9,7 @@ import (
 
 type FunctionActionParams struct {
 	core.BaseParams
-	Func func() core.ResultDetails
+	Func func(ctx context.Context) core.ResultDetails
 }
 
 // FunctionAction executes the provided function when activated and returns its result. Note that the function is executed
@@ -24,7 +24,7 @@ type function_action[Blackboard any] struct {
 }
 
 func (a *function_action[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	return a.Params.Func()
+	return a.Params.Func(ctx)
 }
 
 func (a *function_action[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {

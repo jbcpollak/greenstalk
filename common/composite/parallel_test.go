@@ -29,7 +29,7 @@ func TestParallelExecution(t *testing.T) {
 
 	action1 := action.AsyncFunctionAction[core.EmptyBlackboard](action.AsyncFunctionActionParams{
 		BaseParams: "Action1",
-		Func: func() core.ResultDetails {
+		Func: func(ctx context.Context) core.ResultDetails {
 			messageChan <- actionMessage{action1Name, start}
 			time.Sleep(200 * time.Millisecond)
 			messageChan <- actionMessage{action1Name, end}
@@ -39,7 +39,7 @@ func TestParallelExecution(t *testing.T) {
 
 	action2 := action.AsyncFunctionAction[core.EmptyBlackboard](action.AsyncFunctionActionParams{
 		BaseParams: "Action2",
-		Func: func() core.ResultDetails {
+		Func: func(ctx context.Context) core.ResultDetails {
 			messageChan <- actionMessage{action2Name, start}
 			time.Sleep(200 * time.Millisecond)
 			messageChan <- actionMessage{action2Name, end}
@@ -137,7 +137,7 @@ func TestParallelCompletionReset(t *testing.T) {
 			),
 			action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
 				BaseParams: "increment",
-				Func: func() core.ResultDetails {
+				Func: func(ctx context.Context) core.ResultDetails {
 					count := counterParam.Get()
 					count++
 					counterParam.Set(count)
@@ -203,7 +203,7 @@ func TestNestedParallels(t *testing.T) {
 	makeAsyncIncrement := func() core.Node[core.EmptyBlackboard] {
 		return action.AsyncFunctionAction[core.EmptyBlackboard](action.AsyncFunctionActionParams{
 			BaseParams: "increment",
-			Func: func() core.ResultDetails {
+			Func: func(ctx context.Context) core.ResultDetails {
 				synchronizedCounter.Lock()
 				defer synchronizedCounter.Unlock()
 				synchronizedCounter.Set(synchronizedCounter.Get() + 1)
