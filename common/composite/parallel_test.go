@@ -137,7 +137,7 @@ func TestParallelCompletionReset(t *testing.T) {
 			),
 			action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
 				BaseParams: "increment",
-				Func: func(ctx context.Context) core.ResultDetails {
+				Func: func() core.ResultDetails {
 					count := counterParam.Get()
 					count++
 					counterParam.Set(count)

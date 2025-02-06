@@ -35,7 +35,7 @@ func TestWith(t *testing.T) {
 	childCalled := new(bool)
 	*childCalled = false
 	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
-		Func: func(ctx context.Context) core.ResultDetails {
+		Func: func() core.ResultDetails {
 			*childCalled = true
 			return core.SuccessResult()
 		},
@@ -127,7 +127,7 @@ func TestWithCloserError(t *testing.T) {
 	childCalled := new(bool)
 	*childCalled = false
 	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
-		Func: func(ctx context.Context) core.ResultDetails {
+		Func: func() core.ResultDetails {
 			*childCalled = true
 			return core.SuccessResult()
 		},
@@ -210,7 +210,7 @@ func TestWithInitError(t *testing.T) {
 	childCalled := new(bool)
 	*childCalled = false
 	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
-		Func: func(ctx context.Context) core.ResultDetails {
+		Func: func() core.ResultDetails {
 			*childCalled = true
 			return core.SuccessResult()
 		},
