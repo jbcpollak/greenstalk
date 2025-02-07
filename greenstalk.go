@@ -75,8 +75,13 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 		// If we aren't shutting down, feed the error back through the event loop.
 		if err != nil && !errors.Is(err, context.Canceled) {
 			internal.Logger.Error("Error in running function", "err", err)
-			// TODO: put sender's ID in the event so it can be notified
-			bt.events <- core.ErrorEvent{Err: err}
+
+			select {
+			case <-bt.ctx.Done():
+				return
+			case bt.events <- core.ErrorEvent{Err: err}:
+				return
+			}
 		}
 	}
 
