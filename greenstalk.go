@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/jbcpollak/greenstalk/core"
 	"github.com/jbcpollak/greenstalk/internal"
@@ -12,11 +13,13 @@ import (
 
 // BehaviorTree ...
 type behaviorTree[Blackboard any] struct {
-	ctx        context.Context
-	Root       core.Node[Blackboard]
-	Blackboard Blackboard
-	events     chan core.Event
-	visitor    core.Visitor[Blackboard]
+	ctx          context.Context
+	Root         core.Node[Blackboard]
+	Blackboard   Blackboard
+	events       chan core.Event
+	visitor      core.Visitor[Blackboard]
+	shuttingDown bool
+	shutdownLock sync.Mutex
 }
 
 func NewBehaviorTree[Blackboard any](
@@ -36,11 +39,12 @@ func NewBehaviorTree[Blackboard any](
 	}
 
 	tree := &behaviorTree[Blackboard]{
-		ctx:        context.TODO(),
-		Root:       root,
-		Blackboard: bb,
-		events:     make(chan core.Event, 100 /* arbitrary */),
-		visitor:    func(n core.Walkable[Blackboard]) {},
+		ctx:          context.TODO(),
+		Root:         root,
+		Blackboard:   bb,
+		events:       make(chan core.Event, 100 /* arbitrary */),
+		visitor:      func(n core.Walkable[Blackboard]) {},
+		shutdownLock: sync.Mutex{},
 	}
 
 	// Apply all options to the tree.
@@ -65,14 +69,23 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 
 	handleRunningResultDetails := func(running core.InitRunningResultDetails) {
 		err := running.RunningFn(bt.ctx, func(evt core.Event) error {
-			bt.events <- evt
+			bt.shutdownLock.Lock()
+			defer bt.shutdownLock.Unlock()
+
+			if !bt.shuttingDown {
+				bt.events <- evt
+			}
 			return nil
 		})
 		// If we aren't shutting down, feed the error back through the event loop.
 		if err != nil && !errors.Is(err, context.Canceled) {
 			internal.Logger.Error("Error in running function", "err", err)
 			// TODO: put sender's ID in the event so it can be notified
-			bt.events <- core.ErrorEvent{Err: err}
+			bt.shutdownLock.Lock()
+			defer bt.shutdownLock.Unlock()
+			if !bt.shuttingDown {
+				bt.events <- core.ErrorEvent{Err: err}
+			}
 		}
 	}
 
@@ -108,6 +121,9 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 	for {
 		select {
 		case <-bt.ctx.Done():
+			bt.shutdownLock.Lock()
+			defer bt.shutdownLock.Unlock()
+			bt.shuttingDown = true
 			return nil
 		case evt := <-bt.events:
 			if errEvt, ok := evt.(core.ErrorEvent); ok {
