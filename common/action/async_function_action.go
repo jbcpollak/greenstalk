@@ -10,7 +10,7 @@ import (
 
 type AsyncFunctionActionParams struct {
 	core.BaseParams
-	Func func() core.ResultDetails
+	Func func(ctx context.Context) core.ResultDetails
 }
 
 type asyncFunctionFinishedEvent struct {
@@ -38,8 +38,8 @@ func (a *asyncFunctionAction[Blackboard]) Activate(ctx context.Context, bb Black
 	return core.InitRunningResult(a.performFunction)
 }
 
-func (a *asyncFunctionAction[Blackboard]) performFunction(_ context.Context, enqueue core.EnqueueFn) error {
-	a.fnResult = a.Params.Func()
+func (a *asyncFunctionAction[Blackboard]) performFunction(ctx context.Context, enqueue core.EnqueueFn) error {
+	a.fnResult = a.Params.Func(ctx)
 	if a.fnResult.Status() == core.StatusRunning {
 		a.fnResult = core.ErrorResult(fmt.Errorf("async function returned invalid status of StatusRunning"))
 	}

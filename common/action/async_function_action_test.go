@@ -13,18 +13,18 @@ import (
 
 func TestAsyncFunctionAction(t *testing.T) {
 
-	asyncFunctionExpectedResultsMap := map[core.Status]func() core.ResultDetails{}
+	asyncFunctionExpectedResultsMap := map[core.Status]func(ctx context.Context) core.ResultDetails{}
 
-	asyncFunctionExpectedResultsMap[core.StatusSuccess] = func() core.ResultDetails {
+	asyncFunctionExpectedResultsMap[core.StatusSuccess] = func(ctx context.Context) core.ResultDetails {
 		return core.SuccessResult()
 	}
 
-	asyncFunctionExpectedResultsMap[core.StatusFailure] = func() core.ResultDetails {
+	asyncFunctionExpectedResultsMap[core.StatusFailure] = func(ctx context.Context) core.ResultDetails {
 		return core.FailureResult()
 	}
 
 	const error_msg = "error here"
-	asyncFunctionExpectedResultsMap[core.StatusError] = func() core.ResultDetails {
+	asyncFunctionExpectedResultsMap[core.StatusError] = func(ctx context.Context) core.ResultDetails {
 		return core.ErrorResult(fmt.Errorf(error_msg))
 	}
 
@@ -33,12 +33,12 @@ func TestAsyncFunctionAction(t *testing.T) {
 	}
 
 	// invalid usage - should never return RunningResult from the async function
-	testAsyncFunctionAction(t, core.StatusError, func() core.ResultDetails {
+	testAsyncFunctionAction(t, core.StatusError, func(ctx context.Context) core.ResultDetails {
 		return core.RunningResult()
 	}, "async function returned invalid status of StatusRunning")
 }
 
-func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func() core.ResultDetails, errMsg string) {
+func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(ctx context.Context) core.ResultDetails, errMsg string) {
 	asyncFunctionAction := AsyncFunctionAction[core.EmptyBlackboard](AsyncFunctionActionParams{
 		BaseParams: "asyncFunctionNode",
 		Func:       fn,

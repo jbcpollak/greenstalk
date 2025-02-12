@@ -65,14 +65,23 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 
 	handleRunningResultDetails := func(running core.InitRunningResultDetails) {
 		err := running.RunningFn(bt.ctx, func(evt core.Event) error {
-			bt.events <- evt
-			return nil
+			select {
+			case <-bt.ctx.Done():
+				return bt.ctx.Err()
+			case bt.events <- evt:
+				return nil
+			}
 		})
 		// If we aren't shutting down, feed the error back through the event loop.
 		if err != nil && !errors.Is(err, context.Canceled) {
 			internal.Logger.Error("Error in running function", "err", err)
-			// TODO: put sender's ID in the event so it can be notified
-			bt.events <- core.ErrorEvent{Err: err}
+
+			select {
+			case <-bt.ctx.Done():
+				return
+			case bt.events <- core.ErrorEvent{Err: err}:
+				return
+			}
 		}
 	}
 
@@ -100,8 +109,6 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 }
 
 func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
-	defer close(bt.events)
-
 	// Put the first event on the queue.
 	bt.events <- evt
 
