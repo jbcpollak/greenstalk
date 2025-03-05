@@ -64,6 +64,10 @@ func printToLog[Blackboard any](node core.Walkable[Blackboard], level int) {
 
 }
 
+func PrintTreeDiffToLog[Blackboard any](node core.Walkable[Blackboard]) {
+	node.Walk(printToLog, 0)
+}
+
 var colorForStatus = map[core.Status]color.Attribute{
 	core.StatusFailure: color.FgRed,
 	core.StatusRunning: color.FgYellow,
