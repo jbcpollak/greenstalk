@@ -16,7 +16,7 @@ type behaviorTree[Blackboard any] struct {
 	Root       core.Node[Blackboard]
 	Blackboard Blackboard
 	events     chan core.Event
-	visitor    core.Visitor[Blackboard]
+	visitors   []core.Visitor[Blackboard]
 }
 
 func NewBehaviorTree[Blackboard any](
@@ -40,7 +40,6 @@ func NewBehaviorTree[Blackboard any](
 		Root:       root,
 		Blackboard: bb,
 		events:     make(chan core.Event, 100 /* arbitrary */),
-		visitor:    func(n core.Walkable[Blackboard]) {},
 	}
 
 	// Apply all options to the tree.
@@ -103,7 +102,9 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 		return core.ErrorResult(fmt.Errorf("invalid status %v", status))
 	}
 
-	bt.visitor(bt.Root)
+	for _, visitor := range bt.visitors {
+		visitor(bt.Root)
+	}
 
 	return result
 }

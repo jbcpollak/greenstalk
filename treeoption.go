@@ -17,7 +17,7 @@ type TreeOption[Blackboard any] func(*behaviorTree[Blackboard])
 // WithVisitor lets you specify a visitor which is called after every tick and visits every node.
 func WithVisitor[Blackboard any](v core.Visitor[Blackboard]) TreeOption[Blackboard] {
 	return func(p *behaviorTree[Blackboard]) {
-		p.visitor = v
+		p.visitors = append(p.visitors, v)
 	}
 }
 
