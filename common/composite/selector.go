@@ -19,7 +19,7 @@ type selector[Blackboard any] struct {
 }
 
 func (s *selector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	s.Composite.CurrentChild = 0
+	s.CurrentChild = 0
 
 	// Tick as expected
 	return s.Tick(ctx, bb, evt)
@@ -31,7 +31,7 @@ func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 		if result.Status() != core.StatusFailure {
 			return result
 		}
-		s.Composite.CurrentChild++
+		s.CurrentChild++
 	}
 	return core.FailureResult()
 }

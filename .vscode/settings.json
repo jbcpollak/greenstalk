@@ -1,6 +1,8 @@
 {
 	"cSpell.words": [
 		"coro",
-		"jbcpollak"
-	]
+		"jbcpollak",
+		"nolint"
+	],
+	"go.lintTool": "golangci-lint-v2"
 }
