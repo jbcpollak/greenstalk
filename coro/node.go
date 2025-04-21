@@ -40,6 +40,7 @@ func Node[Blackboard any, P core.Params](
 var (
 	ErrAlreadyActivated = errors.New("already activated")
 	ErrNoResult         = errors.New("no result")
+	ErrNextTooSoon      = errors.New("called next too soon")
 )
 
 // Activate implements core.Node.
@@ -86,20 +87,24 @@ func (n *node[Blackboard, P]) Leave(Blackboard) error {
 
 func (n *node[Blackboard, P]) next() iter.Seq2[Blackboard, core.Event] {
 	return func(yield func(Blackboard, core.Event) bool) {
+		var lastBB Blackboard
 		for {
 			n.nMu.Lock()
 			if n.fNext == nil {
+				// node deactivated, gracefully acknowledge the end of the seq
 				n.nMu.Unlock()
 				break
 			}
 			if n.nB == nil || n.nE == nil {
 				n.nMu.Unlock()
-				panic("called next too soon")
+				yield(lastBB, core.ErrorEvent{Err: ErrNextTooSoon})
+				break
 			}
-			b, e := *n.nB, n.nE
+			var e core.Event
+			lastBB, e = *n.nB, n.nE
 			n.nB, n.nE = nil, nil
 			n.nMu.Unlock()
-			if !yield(b, e) {
+			if !yield(lastBB, e) {
 				break
 			}
 		}
