@@ -98,7 +98,7 @@ type EmptyBlackboard struct{}
 type (
 	// Params denotes a list of parameters to a node.
 	// Obsolete, do not use on new nodes
-	DefaultParams map[string]interface{}
+	DefaultParams map[string]any
 
 	// Returns is just a type alias for Params.
 	// Obsolete, do not use on new nodes

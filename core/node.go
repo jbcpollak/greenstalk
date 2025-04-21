@@ -40,7 +40,7 @@ func (e ErrorEvent) TargetNodeId() uuid.UUID {
 }
 
 // Preliminary interface to work around intermediate types like
-// composite, decorator, etc not inplementing Enter/Tick/Leave
+// composite, decorator, etc not implementing Enter/Tick/Leave
 type Walkable[Blackboard any] interface {
 	// Automatically implemented by embedding a pointer to a
 	// Composite, Decorator or Leaf node in the custom node.
@@ -55,7 +55,7 @@ type Walkable[Blackboard any] interface {
 }
 
 type Visitor[Blackboard any] func(Walkable[Blackboard])
-type WalkFunc[Blackboard any] func(Walkable[Blackboard], int)
+type WalkFunc[Blackboard any] func(node Walkable[Blackboard], level int)
 
 // The Node interface must be satisfied by any custom node.
 type Node[Blackboard any] interface {
