@@ -15,6 +15,7 @@ func TestNode(t *testing.T) {
 	tree := coro.Node(
 		func(
 			ctx context.Context,
+			_ core.BaseParams,
 			next iter.Seq2[core.EmptyBlackboard, core.Event],
 		) iter.Seq[core.ResultDetails] {
 			return func(yield func(core.ResultDetails) bool) {
@@ -23,10 +24,13 @@ func TestNode(t *testing.T) {
 					if _, ok := e.(completionEvent); ok {
 						t.Log("ending on completion event")
 						yield(core.SuccessResult())
+						// if we don't break here, `next` will still end
 						break
+					} else {
+						yield(core.RunningResult())
 					}
-					yield(core.RunningResult())
 				}
+				t.Log("coro node complete")
 			}
 		},
 		core.BaseParams("coro.TestNode"),
