@@ -12,6 +12,7 @@ import (
 func TestNode(t *testing.T) {
 	ctx := t.Context()
 
+	ticks, completions := 0, 0
 	tree := coro.Node(
 		func(
 			ctx context.Context,
@@ -21,8 +22,10 @@ func TestNode(t *testing.T) {
 			return func(yield func(core.ResultDetails) bool) {
 				for b, e := range next {
 					t.Logf("got tick: %v %T", b, e)
+					ticks++
 					if _, ok := e.(completionEvent); ok {
 						t.Log("ending on completion event")
+						completions++
 						yield(core.SuccessResult())
 						// if we don't break here, `next` will still end
 						break
@@ -47,6 +50,13 @@ func TestNode(t *testing.T) {
 		if s := r.Status(); s == core.StatusFailure || s == core.StatusSuccess {
 			break
 		}
+	}
+
+	if ticks != 10 {
+		t.Errorf("expect ticks=10, got %d", ticks)
+	}
+	if completions != 1 {
+		t.Errorf("Expect completions=1, got %d", completions)
 	}
 }
 
