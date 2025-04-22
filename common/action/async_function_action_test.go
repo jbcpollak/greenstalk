@@ -2,7 +2,7 @@ package action
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"reflect"
 	"sync"
 	"testing"
@@ -25,7 +25,7 @@ func TestAsyncFunctionAction(t *testing.T) {
 
 	const error_msg = "error here"
 	asyncFunctionExpectedResultsMap[core.StatusError] = func(ctx context.Context) core.ResultDetails {
-		return core.ErrorResult(fmt.Errorf(error_msg))
+		return core.ErrorResult(errors.New(error_msg))
 	}
 
 	for status, fn := range asyncFunctionExpectedResultsMap {
