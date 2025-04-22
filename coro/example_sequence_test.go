@@ -9,23 +9,19 @@ import (
 	"github.com/jbcpollak/greenstalk/coro"
 )
 
-type sequence[Blackboard any] struct {
-	children []core.Node[Blackboard]
-	// NOTE: this doesn't cover implementing Walk
-}
-
-func (s *sequence[Blackboard]) run(
+func sequence[Blackboard any](
 	_ context.Context,
 	_ core.BaseParams,
+	children []core.Node[Blackboard],
 	next iter.Seq[coro.Tick[Blackboard]],
 ) iter.Seq[core.ResultDetails] {
 	return func(yield func(core.ResultDetails) bool) {
 		i := 0
 	EVENTS:
 		for args := range next {
-			for ; i < len(s.children); i++ {
+			for ; i < len(children); i++ {
 				// TODO: ctx is wrong here
-				r := core.Update(args.Ctx, s.children[i], args.BB, args.Event)
+				r := core.Update(args.Ctx, children[i], args.BB, args.Event)
 				if s := r.Status(); s != core.StatusSuccess {
 					if !yield(r) {
 						return
@@ -43,8 +39,7 @@ func (s *sequence[Blackboard]) run(
 func NewSequence[Blackboard any](
 	children ...core.Node[Blackboard],
 ) core.Node[Blackboard] {
-	s := &sequence[Blackboard]{children}
-	return coro.Node(s.run, core.BaseParams("Example"))
+	return coro.Composite(sequence, core.BaseParams("Example"), children...)
 }
 
 type CounterParams struct {
@@ -101,6 +96,11 @@ func ExampleRunningCounter() {
 		fmt.Printf("event %d, result=%v, counts=%d,%d\n", i, r.Status(), c1.Current, c2.Current)
 	}
 
+	// make sure the composite structure works correctly
+	s.Walk(func(node core.Walkable[core.EmptyBlackboard], level int) {
+		fmt.Printf("node: %s at %d\n", node.Name(), level)
+	}, 0)
+
 	// Output: event 0, result=3, counts=1,0
 	// event 1, result=3, counts=2,0
 	// event 2, result=3, counts=3,0
@@ -111,4 +111,7 @@ func ExampleRunningCounter() {
 	// event 7, result=3, counts=5,4
 	// event 8, result=3, counts=5,5
 	// event 9, result=1, counts=5,6
+	// node: Example at 0
+	// node: c1 at 1
+	// node: c2 at 1
 }
