@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"iter"
-	"sync"
+	"sync/atomic"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
@@ -16,9 +16,16 @@ type node[Blackboard any, P core.Params] struct {
 	fNext func() (core.ResultDetails, bool)
 	fStop func()
 
-	nMu sync.Mutex
-	nB  *Blackboard
-	nE  core.Event
+	nextArgs atomic.Pointer[Tick[Blackboard]]
+}
+
+// Tick represents the arguments to a tick. In a normal node these would be
+// passed as arguments. In a coroutine node they are yielded from the `next`
+// iterator.
+type Tick[Blackboard any] struct {
+	Ctx   context.Context
+	BB    Blackboard
+	Event core.Event
 }
 
 // A NodeFunc is used to implement a [core.Node] as a coroutine.
@@ -41,12 +48,12 @@ type node[Blackboard any, P core.Params] struct {
 // with an Error result wrapping [ErrNoResult].
 //
 // The `ctx` parameter is only valid during activation, i.e. up until the
-// NodeFunc yields its first result. There is no access to the [context.Context]
-// for later events (TODO).
+// NodeFunc yields its first result. After that the Ctx yielded from `next` must
+// be used for the duration of each tick.
 type NodeFunc[Blackboard any, P core.Params] func(
 	ctx context.Context,
 	params P,
-	next iter.Seq2[Blackboard, core.Event],
+	next iter.Seq[Tick[Blackboard]],
 ) iter.Seq[core.ResultDetails]
 
 // Node wraps a [NodeFunc] to implement a [core.Node]. See [NodeFunc] for
@@ -73,10 +80,8 @@ func (n *node[Blackboard, P]) Activate(ctx context.Context, b Blackboard, e core
 	if n.fNext != nil {
 		return core.ErrorResult(ErrAlreadyActivated)
 	}
-	// push b,e to the coroutine
-	n.nMu.Lock()
-	n.nB, n.nE = &b, e
-	n.nMu.Unlock()
+	// push args to the coroutine
+	n.nextArgs.Store(&Tick[Blackboard]{ctx, b, e})
 
 	// start the coroutine
 	n.fNext, n.fStop = iter.Pull(n.f(ctx, n.Params, n.next()))
@@ -91,10 +96,8 @@ func (n *node[Blackboard, P]) Activate(ctx context.Context, b Blackboard, e core
 
 // Tick implements core.Node.
 func (n *node[Blackboard, P]) Tick(ctx context.Context, b Blackboard, e core.Event) core.ResultDetails {
-	// push b,e to the coroutine
-	n.nMu.Lock()
-	n.nB, n.nE = &b, e
-	n.nMu.Unlock()
+	// push args to the coroutine
+	n.nextArgs.Store(&Tick[Blackboard]{ctx, b, e})
 	r, ok := n.fNext()
 	if !ok {
 		return core.ErrorResult(ErrNoResult)
@@ -110,26 +113,19 @@ func (n *node[Blackboard, P]) Leave(Blackboard) error {
 	return nil
 }
 
-func (n *node[Blackboard, P]) next() iter.Seq2[Blackboard, core.Event] {
-	return func(yield func(Blackboard, core.Event) bool) {
-		var lastBB Blackboard
-		for {
-			n.nMu.Lock()
-			if n.fNext == nil {
-				// node deactivated, gracefully acknowledge the end of the seq
-				n.nMu.Unlock()
+func (n *node[Blackboard, P]) next() iter.Seq[Tick[Blackboard]] {
+	return func(yield func(Tick[Blackboard]) bool) {
+		var last Tick[Blackboard]
+		// loop until node deactivated, which sets fNext nil
+		for n.fNext != nil {
+			args := n.nextArgs.Swap(nil)
+			if args == nil {
+				last.Event = core.ErrorEvent{Err: ErrNextTooSoon}
+				yield(last)
 				break
 			}
-			if n.nB == nil || n.nE == nil {
-				n.nMu.Unlock()
-				yield(lastBB, core.ErrorEvent{Err: ErrNextTooSoon})
-				break
-			}
-			var e core.Event
-			lastBB, e = *n.nB, n.nE
-			n.nB, n.nE = nil, nil
-			n.nMu.Unlock()
-			if !yield(lastBB, e) {
+			last = *args
+			if !yield(last) {
 				break
 			}
 		}

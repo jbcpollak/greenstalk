@@ -17,13 +17,13 @@ func TestNode(t *testing.T) {
 		func(
 			ctx context.Context,
 			_ core.BaseParams,
-			next iter.Seq2[core.EmptyBlackboard, core.Event],
+			next iter.Seq[coro.Tick[core.EmptyBlackboard]],
 		) iter.Seq[core.ResultDetails] {
 			return func(yield func(core.ResultDetails) bool) {
-				for b, e := range next {
-					t.Logf("got tick: %v %T", b, e)
+				for args := range next {
+					t.Logf("got tick: %v %T", args.BB, args.Event)
 					ticks++
-					if _, ok := e.(completionEvent); ok {
+					if _, ok := args.Event.(completionEvent); ok {
 						t.Log("ending on completion event")
 						completions++
 						yield(core.SuccessResult())

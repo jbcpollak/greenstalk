@@ -15,17 +15,17 @@ type sequence[Blackboard any] struct {
 }
 
 func (s *sequence[Blackboard]) run(
-	ctx context.Context,
+	_ context.Context,
 	_ core.BaseParams,
-	next iter.Seq2[Blackboard, core.Event],
+	next iter.Seq[coro.Tick[Blackboard]],
 ) iter.Seq[core.ResultDetails] {
 	return func(yield func(core.ResultDetails) bool) {
 		i := 0
 	EVENTS:
-		for b, e := range next {
+		for args := range next {
 			for ; i < len(s.children); i++ {
 				// TODO: ctx is wrong here
-				r := core.Update(ctx, s.children[i], b, e)
+				r := core.Update(args.Ctx, s.children[i], args.BB, args.Event)
 				if s := r.Status(); s != core.StatusSuccess {
 					if !yield(r) {
 						return

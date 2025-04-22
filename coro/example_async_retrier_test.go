@@ -52,16 +52,16 @@ type DelayResultEvent struct{ core.DefaultEvent }
 func runAsyncRetrier[Blackboard any, T any](
 	ctx context.Context,
 	params AsyncParams[T],
-	events iter.Seq2[Blackboard, core.Event],
+	events iter.Seq[coro.Tick[Blackboard]],
 ) iter.Seq[core.ResultDetails] {
 	return func(yield func(core.ResultDetails) bool) {
 		// this could also be written as a for loop over `events`, this is just
 		// an example of how things can be done with pull wrappers when that
 		// makes things easier.
-		next, stop := iter.Pull2(events)
+		next, stop := iter.Pull(events)
 		defer stop()
 
-		_, _, ok := next()
+		_, ok := next()
 		if !ok {
 			panic("WAT")
 		}
@@ -83,11 +83,11 @@ func runAsyncRetrier[Blackboard any, T any](
 		}
 
 		for {
-			_, evt, ok := next()
+			args, ok := next()
 			if !ok {
 				break
 			}
-			switch evt := evt.(type) {
+			switch evt := args.Event.(type) {
 			case DelayResultEvent:
 				fmt.Printf("retry delay elapsed, starting again\n")
 				if !yield(core.InitRunningResult(do)) {
