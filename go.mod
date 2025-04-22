@@ -1,6 +1,6 @@
 module github.com/jbcpollak/greenstalk
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/fatih/color v1.7.0
