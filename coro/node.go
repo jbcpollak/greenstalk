@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"iter"
+	"reflect"
+	"runtime"
 	"sync/atomic"
 
 	"github.com/jbcpollak/greenstalk/core"
@@ -67,6 +69,14 @@ func Node[Blackboard any, P core.Params](
 		f:    f,
 	}
 	return n
+}
+
+// SimpleNode wraps [Node] for the common case of a coroutine that doesn't use a
+// blackboard (i.e. uses [core.EmptyBlackboard]) and can use the function name
+// as the node name.
+func SimpleNode(f NodeFunc[core.EmptyBlackboard, core.BaseParams]) *node[core.EmptyBlackboard, core.BaseParams] {
+	funcName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+	return Node(f, core.BaseParams("coro."+funcName))
 }
 
 var (

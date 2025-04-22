@@ -13,31 +13,29 @@ func TestNode(t *testing.T) {
 	ctx := t.Context()
 
 	ticks, completions := 0, 0
-	tree := coro.Node(
-		func(
-			ctx context.Context,
-			_ core.BaseParams,
-			next iter.Seq[coro.Tick[core.EmptyBlackboard]],
-		) iter.Seq[core.ResultDetails] {
-			return func(yield func(core.ResultDetails) bool) {
-				for args := range next {
-					t.Logf("got tick: %v %T", args.BB, args.Event)
-					ticks++
-					if _, ok := args.Event.(completionEvent); ok {
-						t.Log("ending on completion event")
-						completions++
-						yield(core.SuccessResult())
-						// if we don't break here, `next` will still end
-						break
-					} else {
-						yield(core.RunningResult())
-					}
+	counter := func(
+		_ context.Context,
+		_ core.BaseParams,
+		next iter.Seq[coro.Tick[core.EmptyBlackboard]],
+	) iter.Seq[core.ResultDetails] {
+		return func(yield func(core.ResultDetails) bool) {
+			for args := range next {
+				t.Logf("got tick: %v %T", args.BB, args.Event)
+				ticks++
+				if _, ok := args.Event.(completionEvent); ok {
+					t.Log("ending on completion event")
+					completions++
+					yield(core.SuccessResult())
+					// if we don't break here, `next` will still end
+					break
+				} else {
+					yield(core.RunningResult())
 				}
-				t.Log("coro node complete")
 			}
-		},
-		core.BaseParams("coro.TestNode"),
-	)
+			t.Log("coro node complete")
+		}
+	}
+	tree := coro.SimpleNode(counter)
 
 	bb := core.EmptyBlackboard{}
 	for i := range 10 {
