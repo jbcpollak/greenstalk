@@ -14,7 +14,7 @@ import (
 func TestFail(t *testing.T) {
 	fail := Fail[core.EmptyBlackboard](FailParams{})
 
-	var failSequence = composite.Sequence[core.EmptyBlackboard](
+	var failSequence = composite.Sequence(
 		fail,
 	)
 

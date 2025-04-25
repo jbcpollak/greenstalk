@@ -19,7 +19,7 @@ type sequence[Blackboard any] struct {
 }
 
 func (s *sequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	s.Composite.CurrentChild = 0
+	s.CurrentChild = 0
 
 	// Tick as expected
 	return s.Tick(ctx, bb, evt)

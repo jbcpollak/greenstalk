@@ -104,11 +104,15 @@ func TestParallelExecution(t *testing.T) {
 		t.Errorf("Unexpected sequence of starts and ends")
 	}
 
-	if !((messages[0].name == action1Name && messages[1].name == action2Name) || (messages[0].name == action2Name && messages[1].name == action1Name)) {
+	//nolint:staticcheck // QF1001 De Morgan's law: makes things more confusing if applied at the inner layer
+	if !(messages[0].name == action1Name && messages[1].name == action2Name) &&
+		!(messages[0].name == action2Name && messages[1].name == action1Name) {
 		t.Errorf("Unexpected order of actions")
 	}
 
-	if !((messages[2].name == action1Name && messages[3].name == action2Name) || (messages[2].name == action2Name && messages[3].name == action1Name)) {
+	//nolint:staticcheck // QF1001 again
+	if !(messages[2].name == action1Name && messages[3].name == action2Name) &&
+		!(messages[2].name == action2Name && messages[3].name == action1Name) {
 		t.Errorf("Unexpected order of actions")
 	}
 }

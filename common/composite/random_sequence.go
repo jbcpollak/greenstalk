@@ -30,13 +30,13 @@ func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 		if result.Status() != core.StatusSuccess {
 			return result
 		}
-		s.Composite.CurrentChild++
+		s.CurrentChild++
 	}
 	return core.SuccessResult()
 }
 
 func (s *randomSequence[Blackboard]) Leave(bb Blackboard) error {
-	s.Composite.CurrentChild = 0
+	s.CurrentChild = 0
 	return nil
 }
 
