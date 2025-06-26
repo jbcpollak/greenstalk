@@ -17,10 +17,12 @@ type Decorator[Blackboard any, P Params] struct {
 
 // NewDecorator creates a new decorator base node.
 func NewDecorator[Blackboard any, P Params](params P, child Node[Blackboard]) Decorator[Blackboard, P] {
-	return Decorator[Blackboard, P]{
+	ret := Decorator[Blackboard, P]{
 		BaseNode: newBaseNode(CategoryDecorator, params),
 		Child:    child,
 	}
+	ret.Child.setParentId(ret.id)
+	return ret
 }
 
 func (c *Decorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) {

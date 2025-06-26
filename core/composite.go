@@ -11,10 +11,14 @@ type Composite[Blackboard any, P Params] struct {
 
 // NewComposite creates a new composite base node.
 func NewComposite[Blackboard any, P Params](params P, children []Node[Blackboard]) Composite[Blackboard, P] {
-	return Composite[Blackboard, P]{
+	ret := Composite[Blackboard, P]{
 		BaseNode: newBaseNode(CategoryComposite, params),
 		Children: children,
 	}
+	for _, child := range ret.Children {
+		child.setParentId(ret.id)
+	}
+	return ret
 }
 
 func (c *Composite[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) {

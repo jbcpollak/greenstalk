@@ -9,10 +9,12 @@ type DynamicDecorator[Blackboard any, P Params] struct {
 }
 
 func NewDynamicDecorator[Blackboard any, P Params](params P, childFn func() (Node[Blackboard], error)) DynamicDecorator[Blackboard, P] {
-	return DynamicDecorator[Blackboard, P]{
+	ret := DynamicDecorator[Blackboard, P]{
 		BaseNode: newBaseNode(CategoryDecorator, params),
 		ChildFn:  childFn,
 	}
+	ret.Child.setParentId(ret.id)
+	return ret
 }
 
 func (c *DynamicDecorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) {

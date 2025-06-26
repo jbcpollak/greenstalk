@@ -50,6 +50,8 @@ type Walkable[Blackboard any] interface {
 	Name() string
 	Category() Category
 	String() string
+	ParentId() uuid.UUID
+	setParentId(uuid.UUID)
 
 	Walk(WalkFunc[Blackboard], int)
 }
@@ -78,6 +80,7 @@ type BaseNode[P Params] struct {
 	category Category
 	result   ResultDetails
 	Params   P
+	parentId uuid.UUID
 }
 
 func newBaseNode[P Params](category Category, params P) BaseNode[P] {
@@ -86,6 +89,7 @@ func newBaseNode[P Params](category Category, params P) BaseNode[P] {
 		category: category,
 		result:   InvalidResult(),
 		Params:   params,
+		parentId: uuid.Nil,
 	}
 }
 
@@ -112,4 +116,14 @@ func (n *BaseNode[P]) SetResult(result ResultDetails) {
 // GetCategory returns the category of this node.
 func (n *BaseNode[P]) Category() Category {
 	return n.category
+}
+
+// ParentId gets the UUID of this node's parent
+func (n *BaseNode[P]) ParentId() uuid.UUID {
+	return n.parentId
+}
+
+// setParentId sets a field with this node's parent's UUID
+func (n *BaseNode[P]) setParentId(u uuid.UUID) {
+	n.parentId = u
 }
