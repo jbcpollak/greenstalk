@@ -30,3 +30,8 @@ func (a *Leaf[Blackboard, Params]) String() string {
 		a.Params,
 	)
 }
+
+func (d *Leaf[Blackboard, Params]) SetName(newName string) Walkable[Blackboard] {
+	d.Params = d.Params.SetName(newName).(Params)
+	return d
+}

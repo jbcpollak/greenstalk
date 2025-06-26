@@ -32,3 +32,9 @@ func (c *Decorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) 
 func (d *Decorator[Blackboard, P]) String() string {
 	return fmt.Sprintf("* %s (%v)", d.Params.Name(), d.Params)
 }
+
+// SetName sets the name of this node
+func (d *Decorator[Blackboard, P]) SetName(newName string) Walkable[Blackboard] {
+	d.Params = d.Params.SetName(newName).(P)
+	return d
+}

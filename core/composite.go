@@ -28,3 +28,9 @@ func (c *Composite[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) 
 func (c *Composite[Blackboard, P]) String() string {
 	return "+ " + c.Params.Name()
 }
+
+// SetName sets the name of this node
+func (n *Composite[Blackboard, P]) SetName(newName string) Walkable[Blackboard] {
+	n.Params = n.Params.SetName(newName).(P)
+	return n
+}

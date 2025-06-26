@@ -48,6 +48,7 @@ type Walkable[Blackboard any] interface {
 	SetResult(ResultDetails)
 	Id() uuid.UUID
 	Name() string
+	SetName(string) Walkable[Blackboard]
 	Category() Category
 	String() string
 
@@ -98,12 +99,6 @@ func (n *BaseNode[P]) Id() uuid.UUID {
 // Name returns the name of this node.
 func (n *BaseNode[P]) Name() string {
 	return n.Params.Name()
-}
-
-// SetName sets the name of this node
-func (n *BaseNode[P]) SetName(newName string) *BaseNode[P] {
-	n.Params = n.Params.SetName(newName).(P)
-	return n
 }
 
 // Status returns the status of this node.

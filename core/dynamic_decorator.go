@@ -25,3 +25,8 @@ func (c *DynamicDecorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], leve
 func (d *DynamicDecorator[Blackboard, P]) String() string {
 	return fmt.Sprintf("*d %s (%v)", d.Params.Name(), d.Params)
 }
+
+func (d *DynamicDecorator[Blackboard, P]) SetName(newName string) Walkable[Blackboard] {
+	d.Params = d.Params.SetName(newName).(P)
+	return d
+}
