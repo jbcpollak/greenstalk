@@ -21,7 +21,7 @@ func NewDecorator[Blackboard any, P Params](params P, child Node[Blackboard]) De
 		BaseNode: newBaseNode(CategoryDecorator, params),
 		Child:    child,
 	}
-	ret.Child.setParentId(ret.id)
+	ret.Child.SetParentId(ret.id)
 	return ret
 }
 

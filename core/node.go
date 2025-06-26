@@ -51,7 +51,7 @@ type Walkable[Blackboard any] interface {
 	Category() Category
 	String() string
 	ParentId() uuid.UUID
-	setParentId(uuid.UUID)
+	SetParentId(uuid.UUID)
 
 	Walk(WalkFunc[Blackboard], int)
 }
@@ -123,7 +123,7 @@ func (n *BaseNode[P]) ParentId() uuid.UUID {
 	return n.parentId
 }
 
-// setParentId sets a field with this node's parent's UUID
-func (n *BaseNode[P]) setParentId(u uuid.UUID) {
+// SetParentId sets a field with this node's parent's UUID
+func (n *BaseNode[P]) SetParentId(u uuid.UUID) {
 	n.parentId = u
 }

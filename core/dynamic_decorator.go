@@ -13,7 +13,7 @@ func NewDynamicDecorator[Blackboard any, P Params](params P, childFn func() (Nod
 		BaseNode: newBaseNode(CategoryDecorator, params),
 		ChildFn:  childFn,
 	}
-	ret.Child.setParentId(ret.id)
+	ret.Child.SetParentId(ret.id)
 	return ret
 }
 

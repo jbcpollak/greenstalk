@@ -16,7 +16,7 @@ func NewComposite[Blackboard any, P Params](params P, children []Node[Blackboard
 		Children: children,
 	}
 	for _, child := range ret.Children {
-		child.setParentId(ret.id)
+		child.SetParentId(ret.id)
 	}
 	return ret
 }
