@@ -21,6 +21,7 @@ func (d *dynamicDecorator[Blackboard]) Activate(ctx context.Context, bb Blackboa
 		return core.ErrorResult(err)
 	}
 	d.Child = child
+	d.Child.SetParentId(d.Id())
 
 	return d.Tick(ctx, bb, evt)
 }
