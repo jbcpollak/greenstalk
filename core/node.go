@@ -69,6 +69,7 @@ type Node[Blackboard any] interface {
 
 type Params interface {
 	Name() string
+	SetName(string) Params
 }
 
 // BaseNode contains properties shared by all categories of node.
@@ -94,9 +95,15 @@ func (n *BaseNode[P]) Id() uuid.UUID {
 	return n.id
 }
 
-// Status returns the status of this node.
+// Name returns the name of this node.
 func (n *BaseNode[P]) Name() string {
 	return n.Params.Name()
+}
+
+// SetName sets the name of this node
+func (n *BaseNode[P]) SetName(newName string) *BaseNode[P] {
+	n.Params = n.Params.SetName(newName).(P)
+	return n
 }
 
 // Status returns the status of this node.

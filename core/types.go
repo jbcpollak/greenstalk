@@ -91,6 +91,10 @@ func (b BaseParams) Name() string {
 	return string(b)
 }
 
+func (b BaseParams) SetName(newName string) Params {
+	return BaseParams(newName)
+}
+
 type EmptyReturns struct{}
 
 type EmptyBlackboard struct{}
