@@ -69,7 +69,7 @@ func TestWith(t *testing.T) {
 		testSequence,
 		core.EmptyBlackboard{},
 		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -161,7 +161,7 @@ func TestWithCloserError(t *testing.T) {
 		testSequence,
 		core.EmptyBlackboard{},
 		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -242,7 +242,7 @@ func TestWithInitError(t *testing.T) {
 		testSequence,
 		core.EmptyBlackboard{},
 		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Should net error here %v", err)
