@@ -12,8 +12,8 @@ import (
 // succ/failReq is the minimum amount of nodes required to
 // succeed/fail for the parallel sequence node itself to succeed/fail.
 // A value of 0 for either node means that all nodes must succeed/fail.
-func Parallel[Blackboard any](succReq, failReq int, children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("Parallel"), children)
+func ParallelNamed[Blackboard any](name string, succReq, failReq int, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	if succReq == 0 {
 		succReq = len(children)
 	}
@@ -28,6 +28,9 @@ func Parallel[Blackboard any](succReq, failReq int, children ...core.Node[Blackb
 		0,
 		make([]bool, len(children)),
 	}
+}
+func Parallel[Blackboard any](succReq, failReq int, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return ParallelNamed("Parallel", succReq, failReq, children...)
 }
 
 type parallel[Blackboard any] struct {

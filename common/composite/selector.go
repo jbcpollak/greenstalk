@@ -9,9 +9,12 @@ import (
 // Selector updates each child in order, returning success as soon as
 // a child succeeds. If a child returns Running, the selector node
 // will resume execution from that child the next tick.
-func Selector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("Selector"), children)
+func SelectorNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	return &selector[Blackboard]{Composite: base}
+}
+func Selector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return SelectorNamed("Selector", children...)
 }
 
 type selector[Blackboard any] struct {
