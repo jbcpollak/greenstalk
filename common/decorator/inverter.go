@@ -8,7 +8,7 @@ import (
 
 // Inverter ...
 func InverterNamed[Blackboard any](name string, child core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewDecorator(core.BaseParams("Inverter"), child)
+	base := core.NewDecorator(core.BaseParams(name), child)
 	return &inverter[Blackboard]{Decorator: base}
 }
 func Inverter[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
