@@ -18,8 +18,7 @@ func Update[Blackboard any](ctx context.Context, node Node[Blackboard], bb Black
 
 	node.SetResult(result)
 
-	if result.Status() == StatusError ||
-		result.Status() == StatusRunning {
+	if s := result.Status(); s == StatusError || s == StatusRunning {
 		return result
 	}
 
