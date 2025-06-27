@@ -35,6 +35,6 @@ func (d *Decorator[Blackboard, P]) String() string {
 }
 
 func (d *Decorator[Blackboard, P]) SetNamePrefix(namePrefix string) {
-	d.BaseNode.SetNamePrefix(namePrefix + d.Name())
+	d.BaseNode.SetNamePrefix(namePrefix)
 	d.Child.SetNamePrefix(d.FullName())
 }
