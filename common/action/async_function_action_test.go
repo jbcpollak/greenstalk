@@ -63,7 +63,7 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 		asyncFunctionAction,
 		core.EmptyBlackboard{},
 		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitor(visitor),
+		greenstalk.WithVisitors(visitor),
 	)
 
 	if err != nil {

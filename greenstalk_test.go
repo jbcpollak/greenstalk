@@ -49,7 +49,7 @@ func TestUpdate(t *testing.T) {
 		synchronousRoot,
 		TestBlackboard{id: 42},
 		WithContext[TestBlackboard](ctx),
-		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -117,7 +117,7 @@ func TestEventLoop(t *testing.T) {
 	tree, err := NewBehaviorTree(
 		asynchronousRoot, bb,
 		WithContext[TestBlackboard](ctx),
-		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -216,7 +216,7 @@ func TestAsyncErrorInTree(t *testing.T) {
 	tree, err := NewBehaviorTree(
 		errorFuncNode, bb,
 		WithContext[TestBlackboard](ctx),
-		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)

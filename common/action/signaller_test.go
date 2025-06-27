@@ -30,7 +30,7 @@ func TestSignaller(t *testing.T) {
 	tree, err := greenstalk.NewBehaviorTree(
 		signalSequence,
 		core.EmptyBlackboard{},
-		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -74,7 +74,7 @@ func TestAsyncSignaller(t *testing.T) {
 	tree, err := greenstalk.NewBehaviorTree(
 		signalSequence,
 		core.EmptyBlackboard{},
-		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
