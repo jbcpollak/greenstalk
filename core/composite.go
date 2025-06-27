@@ -33,7 +33,7 @@ func (c *Composite[Blackboard, P]) String() string {
 }
 
 func (c *Composite[Blackboard, P]) SetNamePrefix(namePrefix string) {
-	c.namePrefix = namePrefix + c.Name() + NAME_PREFIX_SEPARATOR
+	c.BaseNode.SetNamePrefix(namePrefix + c.Name())
 	for _, child := range c.Children {
 		child.SetNamePrefix(c.FullName())
 	}
