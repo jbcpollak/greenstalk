@@ -14,14 +14,14 @@ import (
 func TestFail(t *testing.T) {
 	fail := Fail[core.EmptyBlackboard](FailParams{})
 
-	var failSequence = composite.Sequence[core.EmptyBlackboard](
+	var failSequence = composite.Sequence(
 		fail,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		failSequence,
 		core.EmptyBlackboard{},
-		greenstalk.WithVisitor(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)

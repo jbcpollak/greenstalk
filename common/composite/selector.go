@@ -9,9 +9,12 @@ import (
 // Selector updates each child in order, returning success as soon as
 // a child succeeds. If a child returns Running, the selector node
 // will resume execution from that child the next tick.
-func Selector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("Selector"), children)
+func SelectorNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	return &selector[Blackboard]{Composite: base}
+}
+func Selector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return SelectorNamed("Selector", children...)
 }
 
 type selector[Blackboard any] struct {
@@ -19,7 +22,7 @@ type selector[Blackboard any] struct {
 }
 
 func (s *selector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	s.Composite.CurrentChild = 0
+	s.CurrentChild = 0
 
 	// Tick as expected
 	return s.Tick(ctx, bb, evt)
@@ -31,7 +34,7 @@ func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 		if result.Status() != core.StatusFailure {
 			return result
 		}
-		s.Composite.CurrentChild++
+		s.CurrentChild++
 	}
 	return core.FailureResult()
 }

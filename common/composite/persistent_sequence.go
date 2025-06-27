@@ -9,9 +9,12 @@ import (
 // PersistentSequence updates each child in order. If a child
 // returns Failure or Running, this node returns the same value,
 // and resumes execution from the same child node the next tick.
-func PersistentSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("PersistentSequence"), children)
+func PersistentSequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	return &persistentSequence[Blackboard]{Composite: base}
+}
+func PersistentSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return PersistentSequenceNamed("PersistentSequence", children...)
 }
 
 type persistentSequence[Blackboard any] struct {
@@ -34,6 +37,6 @@ func (s *persistentSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard
 }
 
 func (s *persistentSequence[Blackboard]) Leave(bb Blackboard) error {
-	s.Composite.CurrentChild = 0
+	s.CurrentChild = 0
 	return nil
 }

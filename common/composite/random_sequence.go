@@ -9,9 +9,12 @@ import (
 
 // RandomSequence works just like Sequence, except it shuffles
 // the order of its children every time it is re-updated.
-func RandomSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("RandomSequence"), children)
+func RandomSequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	return &randomSequence[Blackboard]{Composite: base}
+}
+func RandomSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return RandomSequenceNamed("RandomSequence", children...)
 }
 
 type randomSequence[Blackboard any] struct {
@@ -30,13 +33,13 @@ func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 		if result.Status() != core.StatusSuccess {
 			return result
 		}
-		s.Composite.CurrentChild++
+		s.CurrentChild++
 	}
 	return core.SuccessResult()
 }
 
 func (s *randomSequence[Blackboard]) Leave(bb Blackboard) error {
-	s.Composite.CurrentChild = 0
+	s.CurrentChild = 0
 	return nil
 }
 

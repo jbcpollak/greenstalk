@@ -31,7 +31,7 @@ func untilTwo(status core.ResultDetails) bool {
 	return n == 2
 }
 
-var synchronousRoot = Sequence[TestBlackboard](
+var synchronousRoot = Sequence(
 	RepeatUntil(RepeatUntilParams{
 		BaseParams: "RepeatUntilTwo",
 		Until:      untilTwo,
@@ -45,11 +45,11 @@ func TestUpdate(t *testing.T) {
 	// Synchronous, so does not need to be cancelled.
 	ctx := context.Background()
 
-	tree, err := NewBehaviorTree[TestBlackboard](
+	tree, err := NewBehaviorTree(
 		synchronousRoot,
 		TestBlackboard{id: 42},
 		WithContext[TestBlackboard](ctx),
-		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -72,7 +72,7 @@ var countChan = make(chan uint)
 var delay = 100
 var asynchronousRoot = Sequence(
 	// Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
-	AsyncDelayer[TestBlackboard](
+	AsyncDelayer(
 		AsyncDelayerParams{
 			BaseParams: core.BaseParams("First"),
 			Delay:      time.Duration(delay) * time.Millisecond,
@@ -83,7 +83,7 @@ var asynchronousRoot = Sequence(
 			CountChan:  countChan,
 		}),
 	),
-	AsyncDelayer[TestBlackboard](
+	AsyncDelayer(
 		AsyncDelayerParams{
 			BaseParams: core.BaseParams("Second"),
 			Delay:      time.Duration(delay) * time.Millisecond,
@@ -117,7 +117,7 @@ func TestEventLoop(t *testing.T) {
 	tree, err := NewBehaviorTree(
 		asynchronousRoot, bb,
 		WithContext[TestBlackboard](ctx),
-		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -216,7 +216,7 @@ func TestAsyncErrorInTree(t *testing.T) {
 	tree, err := NewBehaviorTree(
 		errorFuncNode, bb,
 		WithContext[TestBlackboard](ctx),
-		WithVisitor(util.PrintTreeInColor[TestBlackboard]),
+		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)

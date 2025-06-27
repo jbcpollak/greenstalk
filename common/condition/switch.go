@@ -12,9 +12,12 @@ type SwitchFunc func() int
 // Switch activates the child at the index returned by the switch function.
 // Note that an If node is a rudimentary form of a Switch node with two children
 // and the function returning 0 / 1 for true / false.
-func Switch[Blackboard any](switchFunc SwitchFunc, children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("Switch"), children)
+func SwitchNamed[Blackboard any](name string, switchFunc SwitchFunc, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	return &switchNode[Blackboard]{Composite: base, switchFunc: switchFunc}
+}
+func Switch[Blackboard any](switchFunc SwitchFunc, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return SwitchNamed("Switch", switchFunc, children...)
 }
 
 type switchNode[Blackboard any] struct {
