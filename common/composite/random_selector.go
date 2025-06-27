@@ -8,9 +8,12 @@ import (
 )
 
 // RandomSelector creates a new random selector node.
-func RandomSelector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("RandomSelector"), children)
+func RandomSelectorNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	return &randomSelector[Blackboard]{Composite: base}
+}
+func RandomSelector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return RandomSelectorNamed("RandomSelector", children...)
 }
 
 // randomSelector ...

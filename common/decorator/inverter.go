@@ -7,9 +7,12 @@ import (
 )
 
 // Inverter ...
-func Inverter[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
+func InverterNamed[Blackboard any](name string, child core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewDecorator(core.BaseParams("Inverter"), child)
 	return &inverter[Blackboard]{Decorator: base}
+}
+func Inverter[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
+	return InverterNamed("Inverter", child)
 }
 
 // inverter ...
