@@ -9,9 +9,12 @@ import (
 // Sequence updates each child in order, returning success only if
 // all children succeed. If a child returns Running, the sequence node
 // will resume execution from that child the next tick.
-func Sequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
-	base := core.NewComposite(core.BaseParams("Sequence"), children)
+func SequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	base := core.NewComposite(core.BaseParams(name), children)
 	return &sequence[Blackboard]{Composite: base}
+}
+func Sequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+	return SequenceNamed("Sequence", children...)
 }
 
 type sequence[Blackboard any] struct {
