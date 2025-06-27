@@ -51,7 +51,6 @@ type Walkable[Blackboard any] interface {
 	Id() uuid.UUID
 	Name() string
 	FullName() string
-	SetNamePrefix(string)
 	Category() Category
 	String() string
 
@@ -69,6 +68,7 @@ type Node[Blackboard any] interface {
 	Activate(context.Context, Blackboard, Event) ResultDetails
 	Tick(context.Context, Blackboard, Event) ResultDetails
 	Leave(Blackboard) error
+	SetNamePrefix(string)
 }
 
 type Params interface {
