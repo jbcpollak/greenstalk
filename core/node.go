@@ -2,8 +2,11 @@ package core
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
+	"github.com/letsencrypt/boulder/errors"
 )
 
 const NAME_PREFIX_SEPARATOR = "."
@@ -86,6 +89,10 @@ type BaseNode[P Params] struct {
 }
 
 func newBaseNode[P Params](category Category, params P) BaseNode[P] {
+	if strings.Contains(params.Name(), NAME_PREFIX_SEPARATOR) {
+		err := errors.New(fmt.Sprintf("Node '%s' name may not contain node name separator string '%s'", params.Name(), NAME_PREFIX_SEPARATOR))
+		panic(err)
+	}
 	return BaseNode[P]{
 		id:         uuid.New(),
 		category:   category,
