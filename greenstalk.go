@@ -137,7 +137,7 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 }
 
 // String creates a string representation of the behavior tree
-// by traversing it and writing lexical elements to a string.
+// by traversing it and writing lexical elements to a string
 func (bt *behaviorTree[Blackboard]) String() string {
 	return util.NodeToString(bt.Root)
 }
