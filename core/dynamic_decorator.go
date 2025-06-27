@@ -27,7 +27,7 @@ func (d *DynamicDecorator[Blackboard, P]) String() string {
 }
 
 func (d *DynamicDecorator[Blackboard, P]) SetNamePrefix(namePrefix string) {
-	d.namePrefix = namePrefix + d.Name() + NAME_PREFIX_SEPARATOR
+	d.BaseNode.SetNamePrefix(namePrefix + d.Name())
 	if d.Child != nil {
 		d.Child.SetNamePrefix(d.FullName())
 	}
