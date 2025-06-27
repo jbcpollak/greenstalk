@@ -25,3 +25,10 @@ func (c *DynamicDecorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], leve
 func (d *DynamicDecorator[Blackboard, P]) String() string {
 	return fmt.Sprintf("*d %s (%v)", d.Params.Name(), d.Params)
 }
+
+func (d *DynamicDecorator[Blackboard, P]) SetNamePrefix(namePrefix string) {
+	d.namePrefix = namePrefix + d.Name() + NAME_PREFIX_SEPARATOR
+	if d.Child != nil {
+		d.Child.SetNamePrefix(d.FullName())
+	}
+}
