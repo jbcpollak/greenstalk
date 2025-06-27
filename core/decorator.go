@@ -17,6 +17,7 @@ type Decorator[Blackboard any, P Params] struct {
 
 // NewDecorator creates a new decorator base node.
 func NewDecorator[Blackboard any, P Params](params P, child Node[Blackboard]) Decorator[Blackboard, P] {
+	child.SetNamePrefix(params.Name())
 	return Decorator[Blackboard, P]{
 		BaseNode: newBaseNode(CategoryDecorator, params),
 		Child:    child,
@@ -31,4 +32,9 @@ func (c *Decorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) 
 // String returns a string representation of the decorator node.
 func (d *Decorator[Blackboard, P]) String() string {
 	return fmt.Sprintf("* %s (%v)", d.Params.Name(), d.Params)
+}
+
+func (d *Decorator[Blackboard, P]) SetNamePrefix(namePrefix string) {
+	d.BaseNode.SetNamePrefix(namePrefix)
+	d.Child.SetNamePrefix(d.FullName())
 }

@@ -2,9 +2,13 @@ package core
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 )
+
+const NAME_PREFIX_SEPARATOR = "."
 
 type Event interface {
 	// UUID of the node that generated the event
@@ -48,6 +52,7 @@ type Walkable[Blackboard any] interface {
 	SetResult(ResultDetails)
 	Id() uuid.UUID
 	Name() string
+	FullName() string
 	Category() Category
 	String() string
 
@@ -65,6 +70,7 @@ type Node[Blackboard any] interface {
 	Activate(context.Context, Blackboard, Event) ResultDetails
 	Tick(context.Context, Blackboard, Event) ResultDetails
 	Leave(Blackboard) error
+	SetNamePrefix(string)
 }
 
 type Params interface {
@@ -74,18 +80,24 @@ type Params interface {
 // BaseNode contains properties shared by all categories of node.
 // Do not use this type directly.
 type BaseNode[P Params] struct {
-	id       uuid.UUID
-	category Category
-	result   ResultDetails
-	Params   P
+	id         uuid.UUID
+	category   Category
+	result     ResultDetails
+	Params     P
+	namePrefix string
 }
 
 func newBaseNode[P Params](category Category, params P) BaseNode[P] {
+	if strings.Contains(params.Name(), NAME_PREFIX_SEPARATOR) {
+		err := fmt.Errorf("Node '%s' name may not contain node name separator string '%s'", params.Name(), NAME_PREFIX_SEPARATOR)
+		panic(err)
+	}
 	return BaseNode[P]{
-		id:       uuid.New(),
-		category: category,
-		result:   InvalidResult(),
-		Params:   params,
+		id:         uuid.New(),
+		category:   category,
+		result:     InvalidResult(),
+		Params:     params,
+		namePrefix: "",
 	}
 }
 
@@ -112,4 +124,12 @@ func (n *BaseNode[P]) SetResult(result ResultDetails) {
 // GetCategory returns the category of this node.
 func (n *BaseNode[P]) Category() Category {
 	return n.category
+}
+
+func (n *BaseNode[P]) FullName() string {
+	return n.namePrefix + n.Name()
+}
+
+func (n *BaseNode[P]) SetNamePrefix(name string) {
+	n.namePrefix = name + NAME_PREFIX_SEPARATOR
 }

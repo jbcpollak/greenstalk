@@ -11,6 +11,9 @@ type Composite[Blackboard any, P Params] struct {
 
 // NewComposite creates a new composite base node.
 func NewComposite[Blackboard any, P Params](params P, children []Node[Blackboard]) Composite[Blackboard, P] {
+	for _, child := range children {
+		child.SetNamePrefix(params.Name())
+	}
 	return Composite[Blackboard, P]{
 		BaseNode: newBaseNode(CategoryComposite, params),
 		Children: children,
@@ -27,4 +30,11 @@ func (c *Composite[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) 
 // String returns a string representation of the composite node.
 func (c *Composite[Blackboard, P]) String() string {
 	return "+ " + c.Params.Name()
+}
+
+func (c *Composite[Blackboard, P]) SetNamePrefix(namePrefix string) {
+	c.BaseNode.SetNamePrefix(namePrefix)
+	for _, child := range c.Children {
+		child.SetNamePrefix(c.FullName())
+	}
 }

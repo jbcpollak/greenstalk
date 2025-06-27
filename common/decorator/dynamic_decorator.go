@@ -23,6 +23,7 @@ func (d *dynamicDecorator[Blackboard]) Activate(ctx context.Context, bb Blackboa
 	if err != nil {
 		return core.ErrorResult(err)
 	}
+	child.SetNamePrefix(d.FullName())
 	d.Child = child
 
 	return d.Tick(ctx, bb, evt)
