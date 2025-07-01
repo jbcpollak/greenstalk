@@ -6,9 +6,12 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-func DynamicDecorator[Blackboard any](childFn func() (core.Node[Blackboard], error)) core.Node[Blackboard] {
-	base := core.NewDynamicDecorator(core.BaseParams("DynamicDecorator"), childFn)
+func DynamicDecoratorNamed[Blackboard any](name string, childFn func() (core.Node[Blackboard], error)) core.Node[Blackboard] {
+	base := core.NewDynamicDecorator(core.BaseParams(name), childFn)
 	return &dynamicDecorator[Blackboard]{DynamicDecorator: base}
+}
+func DynamicDecorator[Blackboard any](childFn func() (core.Node[Blackboard], error)) core.Node[Blackboard] {
+	return DynamicDecoratorNamed("DynamicDecorator", childFn)
 }
 
 type dynamicDecorator[Blackboard any] struct {
@@ -20,6 +23,7 @@ func (d *dynamicDecorator[Blackboard]) Activate(ctx context.Context, bb Blackboa
 	if err != nil {
 		return core.ErrorResult(err)
 	}
+	child.SetNamePrefix(d.FullName())
 	d.Child = child
 
 	return d.Tick(ctx, bb, evt)
