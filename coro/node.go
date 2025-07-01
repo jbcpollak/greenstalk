@@ -5,6 +5,7 @@ import (
 	"iter"
 	"reflect"
 	"runtime"
+	"strings"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
@@ -62,5 +63,11 @@ func SimpleNode(
 	f NodeFunc[core.EmptyBlackboard, core.BaseParams],
 ) *node[core.EmptyBlackboard, core.BaseParams] {
 	funcName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
-	return Node(f, core.BaseParams("coro."+funcName))
+	// strip it down to just the leaf package name
+	if _, leaf, ok := strings.Cut(funcName, "/"); ok {
+		funcName = leaf
+	}
+	// replace problematic chars
+	funcName = strings.ReplaceAll(funcName, ".", "_")
+	return Node(f, core.BaseParams("coro_"+funcName))
 }
