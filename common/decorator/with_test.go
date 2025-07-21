@@ -3,7 +3,6 @@ package decorator
 import (
 	"context"
 	"fmt"
-	"io"
 	"sync"
 	"testing"
 	"time"
@@ -16,15 +15,6 @@ import (
 	"github.com/jbcpollak/greenstalk/util"
 )
 
-type testCloser struct {
-	closeCalled *bool
-}
-
-func (t testCloser) Close() error {
-	*t.closeCalled = true
-	return nil
-}
-
 func TestWith(t *testing.T) {
 	var wg sync.WaitGroup
 
@@ -32,22 +22,21 @@ func TestWith(t *testing.T) {
 
 	sigChan := make(chan bool)
 
-	childCalled := new(bool)
-	*childCalled = false
+	childCalled := false
 	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
 		Func: func() core.ResultDetails {
-			*childCalled = true
+			childCalled = true
 			return core.SuccessResult()
 		},
 	})
 
-	closeCalled := new(bool)
-	*closeCalled = false
-	closer := testCloser{
-		closeCalled: closeCalled,
+	closeCalled := false
+	closeFn := func() error {
+		closeCalled = true
+		return nil
 	}
-	with := With(func() (io.Closer, error) {
-		return closer, nil
+	with := With(func() (func() error, error) {
+		return closeFn, nil
 	}, child)
 	// TODO: testCloser and the whole closeCalled thing above just creates a struct with an attached method
 	// Is there a more succinct way to write this?
@@ -99,22 +88,13 @@ func TestWith(t *testing.T) {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
-	if !*childCalled {
+	if !childCalled {
 		t.Errorf("Child was not called")
 	}
 
-	if !*closeCalled {
+	if !closeCalled {
 		t.Errorf("Close was not called")
 	}
-}
-
-type errorCloser struct {
-	closeCalled *bool
-}
-
-func (t errorCloser) Close() error {
-	*t.closeCalled = true
-	return fmt.Errorf("This is an expected error")
 }
 
 func TestWithCloserError(t *testing.T) {
@@ -124,22 +104,22 @@ func TestWithCloserError(t *testing.T) {
 
 	sigChan := make(chan bool)
 
-	childCalled := new(bool)
-	*childCalled = false
+	childCalled := false
 	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
 		Func: func() core.ResultDetails {
-			*childCalled = true
+			childCalled = true
 			return core.SuccessResult()
 		},
 	})
 
-	closeCalled := new(bool)
-	*closeCalled = false
-	closer := errorCloser{
-		closeCalled: closeCalled,
+	closeCalled := false
+	closeFn := func() error {
+		closeCalled = true
+		return fmt.Errorf("This is an expected error")
 	}
-	with := With(func() (io.Closer, error) {
-		return closer, nil
+
+	with := With(func() (func() error, error) {
+		return closeFn, nil
 	}, child)
 	// TODO: testCloser and the whole closeCalled thing above just creates a struct with an attached method
 	// Is there a more succinct way to write this?
@@ -191,11 +171,11 @@ func TestWithCloserError(t *testing.T) {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
-	if !*childCalled {
+	if !childCalled {
 		t.Errorf("Child was not called")
 	}
 
-	if !*closeCalled {
+	if !closeCalled {
 		t.Errorf("Close was not called")
 	}
 }
@@ -219,7 +199,7 @@ func TestWithInitError(t *testing.T) {
 	closeCalled := new(bool)
 	*closeCalled = false
 
-	with := With(func() (io.Closer, error) {
+	with := With(func() (func() error, error) {
 		return nil, fmt.Errorf("This is an error")
 	}, child)
 	// TODO: testCloser and the whole closeCalled thing above just creates a struct with an attached method
