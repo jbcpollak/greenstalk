@@ -6,11 +6,11 @@ import (
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-func WithNamed[Blackboard any](name string, createCloseable func() (func() error, error), child core.Node[Blackboard]) core.Node[Blackboard] {
+func WithNamed[Blackboard any](name string, createCloseable func() (closeFn func() error, err error), child core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewDecorator(core.BaseParams(name), child)
 	return &with[Blackboard]{Decorator: base, createCloseable: createCloseable}
 }
-func With[Blackboard any](createCloseable func() (func() error, error), child core.Node[Blackboard]) core.Node[Blackboard] {
+func With[Blackboard any](createCloseable func() (closeFn func() error, err error), child core.Node[Blackboard]) core.Node[Blackboard] {
 	return WithNamed("With", createCloseable, child)
 }
 
