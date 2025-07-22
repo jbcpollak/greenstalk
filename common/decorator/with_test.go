@@ -38,8 +38,6 @@ func TestWith(t *testing.T) {
 	with := With(func() (func() error, error) {
 		return closeFn, nil
 	}, child)
-	// TODO: testCloser and the whole closeCalled thing above just creates a struct with an attached method
-	// Is there a more succinct way to write this?
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
@@ -121,8 +119,6 @@ func TestWithCloserError(t *testing.T) {
 	with := With(func() (func() error, error) {
 		return closeFn, nil
 	}, child)
-	// TODO: testCloser and the whole closeCalled thing above just creates a struct with an attached method
-	// Is there a more succinct way to write this?
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
@@ -200,8 +196,6 @@ func TestWithInitError(t *testing.T) {
 	with := With(func() (func() error, error) {
 		return nil, fmt.Errorf("This is an error")
 	}, child)
-	// TODO: testCloser and the whole closeCalled thing above just creates a struct with an attached method
-	// Is there a more succinct way to write this?
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
