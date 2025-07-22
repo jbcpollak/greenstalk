@@ -187,17 +187,15 @@ func TestWithInitError(t *testing.T) {
 
 	sigChan := make(chan bool)
 
-	childCalled := new(bool)
-	*childCalled = false
+	childCalled := false
 	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
 		Func: func() core.ResultDetails {
-			*childCalled = true
+			childCalled = true
 			return core.SuccessResult()
 		},
 	})
 
-	closeCalled := new(bool)
-	*closeCalled = false
+	closeCalled := false
 
 	with := With(func() (func() error, error) {
 		return nil, fmt.Errorf("This is an error")
@@ -252,11 +250,11 @@ func TestWithInitError(t *testing.T) {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
-	if *childCalled {
+	if childCalled {
 		t.Errorf("Child was unexpectedly called")
 	}
 
-	if *closeCalled {
+	if closeCalled {
 		t.Errorf("Close was unexpectedly called")
 	}
 }
