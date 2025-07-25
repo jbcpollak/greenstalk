@@ -2,23 +2,22 @@ package decorator
 
 import (
 	"context"
-	"io"
 
 	"github.com/jbcpollak/greenstalk/core"
 )
 
-func WithNamed[Blackboard any](name string, createCloseable func() (io.Closer, error), child core.Node[Blackboard]) core.Node[Blackboard] {
+func WithNamed[Blackboard any](name string, createCloseable func() (closeFn func() error, err error), child core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewDecorator(core.BaseParams(name), child)
 	return &with[Blackboard]{Decorator: base, createCloseable: createCloseable}
 }
-func With[Blackboard any](createCloseable func() (io.Closer, error), child core.Node[Blackboard]) core.Node[Blackboard] {
+func With[Blackboard any](createCloseable func() (closeFn func() error, err error), child core.Node[Blackboard]) core.Node[Blackboard] {
 	return WithNamed("With", createCloseable, child)
 }
 
 type with[Blackboard any] struct {
 	core.Decorator[Blackboard, core.BaseParams]
-	createCloseable func() (io.Closer, error)
-	closeable       io.Closer
+	createCloseable func() (func() error, error)
+	closeFn         func() error
 }
 
 func (d *with[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
@@ -26,7 +25,7 @@ func (d *with[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core
 	if err != nil {
 		return core.ErrorResult(err)
 	} else {
-		d.closeable = closeable
+		d.closeFn = closeable
 	}
 	return d.Tick(ctx, bb, evt)
 }
@@ -38,5 +37,5 @@ func (d *with[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Eve
 
 // Leave ...
 func (d *with[Blackboard]) Leave(bb Blackboard) error {
-	return d.closeable.Close()
+	return d.closeFn()
 }
