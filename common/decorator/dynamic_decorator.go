@@ -34,6 +34,5 @@ func (d *dynamicDecorator[Blackboard]) Tick(ctx context.Context, bb Blackboard, 
 }
 
 func (d *dynamicDecorator[Blackboard]) Leave(bb Blackboard) error {
-	d.Child = nil
 	return nil
 }
