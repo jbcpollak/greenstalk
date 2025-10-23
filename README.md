@@ -55,12 +55,12 @@ A decorator node has a type and one child. Below are some common types of decora
 
 ### Leaf nodes
 
-A leaf node is normally specifically tailored to the application at hand. In a robotics Blackboard the task might be "Pick Up Object" or "Move Arm"; in a video game Blackboard it might be "Find Nearest Target" or "Attack Target". One can generally divide leaf nodes into two subcategories:
+A leaf node is normally specifically tailored to the application at hand. In a robotics Behavior Tree the task might be "Pick Up Object" or "Move Arm"; in a video game Behavior Tree it might be "Find Nearest Target" or "Attack Target". One can generally divide leaf nodes into two subcategories:
 
 - Action nodes, which interact with the environment and return a status depending on the result.
 - Condition nodes, which do not _do_ anything apart from querying the environment for information and subsequently returning a status.
 
-In _Go Behave_, there is no differentiation being made between these two subcategories, as the difference is only semantic.
+In _Greenstalk_, there is no differentiation being made between these two subcategories, as the difference is only semantic.
 
 ## Usage
 
@@ -89,8 +89,6 @@ In addition to have a reference to an actual root node, `Config` has two fields 
 ## Installation
 
 `go get github.com/jbcpollak/greenstalk`
-
-The package is identified by `behave`, not `greenstalk`.
 
 ## License
 
