@@ -141,3 +141,14 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 func (bt *behaviorTree[Blackboard]) String() string {
 	return util.NodeToString(bt.Root)
 }
+
+func (bt *behaviorTree[Blackboard]) Enqueue(ctx context.Context, evt core.Event) error {
+	select {
+	case <-bt.ctx.Done():
+		return bt.ctx.Err()
+	case <-ctx.Done():
+		return ctx.Err()
+	case bt.events <- evt:
+		return nil
+	}
+}
