@@ -2,6 +2,25 @@ package state
 
 import "sync"
 
+type StateGetter[T any] interface {
+	Get() T
+}
+
+type StateSetter[T any] interface {
+	StateResetter
+	Set(val T)
+}
+
+type StateResetter interface {
+	Reset()
+}
+
+type State[T any] interface {
+	StateGetter[T]
+	StateSetter[T]
+	StateResetter
+}
+
 // State Providers allow tree nodes to share data between each other by either writing
 // the state value or reading from it.
 type StateProvider[T any] struct {
@@ -34,20 +53,12 @@ func (p *constStateProvider[T]) Get() T {
 	return p.value
 }
 
-type StateGetter[T any] interface {
-	Get() T
-}
-
-type StateSetter[T any] interface {
-	StateResetter
-	Set(val T)
-}
-
-type StateResetter interface {
-	Reset()
-}
-
 type SynchronizedStateProvider[T any] struct {
-	StateProvider[T]
 	sync.Mutex
+	StateProvider[T]
 }
+
+var (
+	_ State[int] = (*StateProvider[int])(nil)
+	_ State[int] = (*SynchronizedStateProvider[int])(nil)
+)
