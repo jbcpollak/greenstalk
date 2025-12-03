@@ -13,6 +13,7 @@ func SelectorNamed[Blackboard any](name string, children ...core.Node[Blackboard
 	base := core.NewComposite(core.BaseParams(name), children)
 	return &selector[Blackboard]{Composite: base}
 }
+
 func Selector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	return SelectorNamed("Selector", children...)
 }
@@ -39,6 +40,8 @@ func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	return core.FailureResult()
 }
 
-func (s *selector[Blackboard]) Leave(bb Blackboard) error {
+func (s *selector[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*selector[any])(nil)

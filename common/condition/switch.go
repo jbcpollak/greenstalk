@@ -16,6 +16,7 @@ func SwitchNamed[Blackboard any](name string, switchFunc SwitchFunc, children ..
 	base := core.NewComposite(core.BaseParams(name), children)
 	return &switchNode[Blackboard]{Composite: base, switchFunc: switchFunc}
 }
+
 func Switch[Blackboard any](switchFunc SwitchFunc, children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	return SwitchNamed("Switch", switchFunc, children...)
 }
@@ -41,6 +42,8 @@ func (s *switchNode[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt co
 	return core.Update(ctx, child, bb, evt)
 }
 
-func (s *switchNode[Blackboard]) Leave(bb Blackboard) error {
+func (s *switchNode[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*switchNode[any])(nil)

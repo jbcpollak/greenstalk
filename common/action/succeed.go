@@ -39,6 +39,8 @@ func (a *succeed[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.
 }
 
 // Leave ...
-func (a *succeed[Blackboard]) Leave(bb Blackboard) error {
+func (a *succeed[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*succeed[any])(nil)

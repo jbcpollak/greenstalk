@@ -43,6 +43,8 @@ func (a *counter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.
 }
 
 // Leave ...
-func (a *counter[Blackboard]) Leave(bb Blackboard) error {
+func (a *counter[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*counter[any])(nil)

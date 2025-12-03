@@ -13,6 +13,7 @@ func RandomSequenceNamed[Blackboard any](name string, children ...core.Node[Blac
 	base := core.NewComposite(core.BaseParams(name), children)
 	return &randomSequence[Blackboard]{Composite: base}
 }
+
 func RandomSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	return RandomSequenceNamed("RandomSequence", children...)
 }
@@ -38,7 +39,7 @@ func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 	return core.SuccessResult()
 }
 
-func (s *randomSequence[Blackboard]) Leave(bb Blackboard) error {
+func (s *randomSequence[Blackboard]) Leave(context.Context, Blackboard) error {
 	s.CurrentChild = 0
 	return nil
 }
@@ -48,3 +49,5 @@ func shuffle[Blackboard any](nodes []core.Node[Blackboard]) {
 		nodes[i], nodes[j] = nodes[j], nodes[i]
 	})
 }
+
+var _ core.Node[any] = (*randomSequence[any])(nil)

@@ -7,7 +7,6 @@ import (
 // Update updates a node by calling its Enter method if it is not running,
 // then its Tick method, and finally Leave if it is not still running.
 func Update[Blackboard any](ctx context.Context, node Node[Blackboard], bb Blackboard, evt Event) ResultDetails {
-
 	var result ResultDetails
 
 	if node.Result().Status() != StatusRunning {
@@ -22,7 +21,7 @@ func Update[Blackboard any](ctx context.Context, node Node[Blackboard], bb Black
 		return result
 	}
 
-	err := node.Leave(bb)
+	err := node.Leave(ctx, bb)
 	if err != nil {
 		result = ErrorResult(err)
 		node.SetResult(result)

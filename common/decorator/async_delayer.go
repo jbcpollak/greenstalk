@@ -18,7 +18,6 @@ type AsyncDelayerParams struct {
 
 // AsyncDelayer ...
 func AsyncDelayer[Blackboard any](params AsyncDelayerParams, child core.Node[Blackboard]) core.Node[Blackboard] {
-
 	base := core.NewDecorator(params, child)
 
 	d := &asyncdelayer[Blackboard]{
@@ -80,6 +79,8 @@ func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt 
 }
 
 // Leave ...
-func (d *asyncdelayer[Blackboard]) Leave(bb Blackboard) error {
+func (d *asyncdelayer[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*asyncdelayer[any])(nil)

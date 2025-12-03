@@ -7,12 +7,14 @@ import (
 	"github.com/jbcpollak/greenstalk/internal"
 )
 
-type UntilCondition func(status core.ResultDetails) bool
-type RepeatUntilParams struct {
-	core.BaseParams
+type (
+	UntilCondition    func(status core.ResultDetails) bool
+	RepeatUntilParams struct {
+		core.BaseParams
 
-	Until UntilCondition
-}
+		Until UntilCondition
+	}
+)
 
 // RepeatUntil updates its child n times, at which point the repeater
 // returns Success. The repeater runs forever if n == 0.
@@ -33,7 +35,6 @@ func (d *repeatUntil[Blackboard]) repeat(_ context.Context, enqueue core.Enqueue
 }
 
 func (d *repeatUntil[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-
 	return d.Tick(ctx, bb, evt)
 }
 
@@ -55,6 +56,8 @@ func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt c
 	return core.InitRunningResult(d.repeat)
 }
 
-func (d *repeatUntil[Blackboard]) Leave(bb Blackboard) error {
+func (d *repeatUntil[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*repeatUntil[any])(nil)

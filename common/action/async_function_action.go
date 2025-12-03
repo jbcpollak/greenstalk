@@ -59,6 +59,8 @@ func (a *asyncFunctionAction[Blackboard]) Tick(ctx context.Context, bb Blackboar
 	return core.RunningResult()
 }
 
-func (a *asyncFunctionAction[Blackboard]) Leave(bb Blackboard) error {
+func (a *asyncFunctionAction[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*asyncFunctionAction[any])(nil)

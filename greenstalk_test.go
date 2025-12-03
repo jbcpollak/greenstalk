@@ -69,31 +69,33 @@ func TestUpdate(t *testing.T) {
 
 var countChan = make(chan uint)
 
-var delay = 100
-var asynchronousRoot = Sequence(
-	// Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
-	AsyncDelayer(
-		AsyncDelayerParams{
-			BaseParams: core.BaseParams("First"),
-			Delay:      time.Duration(delay) * time.Millisecond,
-		},
-		Counter[TestBlackboard](CounterParams{
-			BaseParams: "First Counter",
-			Limit:      10,
-			CountChan:  countChan,
-		}),
-	),
-	AsyncDelayer(
-		AsyncDelayerParams{
-			BaseParams: core.BaseParams("Second"),
-			Delay:      time.Duration(delay) * time.Millisecond,
-		},
-		Counter[TestBlackboard](CounterParams{
-			BaseParams: "Second Counter",
-			Limit:      10,
-			CountChan:  countChan,
-		}),
-	),
+var (
+	delay            = 100
+	asynchronousRoot = Sequence(
+		// Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
+		AsyncDelayer(
+			AsyncDelayerParams{
+				BaseParams: core.BaseParams("First"),
+				Delay:      time.Duration(delay) * time.Millisecond,
+			},
+			Counter[TestBlackboard](CounterParams{
+				BaseParams: "First Counter",
+				Limit:      10,
+				CountChan:  countChan,
+			}),
+		),
+		AsyncDelayer(
+			AsyncDelayerParams{
+				BaseParams: core.BaseParams("Second"),
+				Delay:      time.Duration(delay) * time.Millisecond,
+			},
+			Counter[TestBlackboard](CounterParams{
+				BaseParams: "Second Counter",
+				Limit:      10,
+				CountChan:  countChan,
+			}),
+		),
+	)
 )
 
 func getCount(d time.Duration) (uint, bool) {
@@ -188,9 +190,11 @@ func (a *errorAsyncNode) Tick(ctx context.Context, bb TestBlackboard, evt core.E
 	panic("Should never get ticked during tests")
 }
 
-func (a *errorAsyncNode) Leave(bb TestBlackboard) error {
+func (a *errorAsyncNode) Leave(context.Context, TestBlackboard) error {
 	panic("Should never leave during tests")
 }
+
+var _ core.Node[TestBlackboard] = (*errorAsyncNode)(nil)
 
 func makeErrorAsyncNode(wg *sync.WaitGroup) *errorAsyncNode {
 	base := core.NewLeaf[TestBlackboard](

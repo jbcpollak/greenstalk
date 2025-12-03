@@ -16,8 +16,7 @@ type Event interface {
 	TargetNodeId() uuid.UUID
 }
 
-type DefaultEvent struct {
-}
+type DefaultEvent struct{}
 
 func (e DefaultEvent) TargetNodeId() uuid.UUID {
 	return uuid.Nil
@@ -59,8 +58,10 @@ type Walkable[Blackboard any] interface {
 	Walk(WalkFunc[Blackboard], int)
 }
 
-type Visitor[Blackboard any] func(Walkable[Blackboard])
-type WalkFunc[Blackboard any] func(node Walkable[Blackboard], level int)
+type (
+	Visitor[Blackboard any]  func(Walkable[Blackboard])
+	WalkFunc[Blackboard any] func(node Walkable[Blackboard], level int)
+)
 
 // The Node interface must be satisfied by any custom node.
 type Node[Blackboard any] interface {
@@ -69,7 +70,7 @@ type Node[Blackboard any] interface {
 	// Must be implemented by the custom node.
 	Activate(context.Context, Blackboard, Event) ResultDetails
 	Tick(context.Context, Blackboard, Event) ResultDetails
-	Leave(Blackboard) error
+	Leave(context.Context, Blackboard) error
 	SetNamePrefix(string)
 }
 

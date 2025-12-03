@@ -13,6 +13,7 @@ func SequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard
 	base := core.NewComposite(core.BaseParams(name), children)
 	return &sequence[Blackboard]{Composite: base}
 }
+
 func Sequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	return SequenceNamed("Sequence", children...)
 }
@@ -39,6 +40,8 @@ func (s *sequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	return core.SuccessResult()
 }
 
-func (s *sequence[Blackboard]) Leave(bb Blackboard) error {
+func (s *sequence[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*sequence[any])(nil)

@@ -11,6 +11,7 @@ func InverterNamed[Blackboard any](name string, child core.Node[Blackboard]) cor
 	base := core.NewDecorator(core.BaseParams(name), child)
 	return &inverter[Blackboard]{Decorator: base}
 }
+
 func Inverter[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
 	return InverterNamed("Inverter", child)
 }
@@ -37,6 +38,8 @@ func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 }
 
 // Leave ...
-func (d *inverter[Blackboard]) Leave(bb Blackboard) error {
+func (d *inverter[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*inverter[any])(nil)

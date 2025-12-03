@@ -12,6 +12,7 @@ func RandomSelectorNamed[Blackboard any](name string, children ...core.Node[Blac
 	base := core.NewComposite(core.BaseParams(name), children)
 	return &randomSelector[Blackboard]{Composite: base}
 }
+
 func RandomSelector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	return RandomSelectorNamed("RandomSelector", children...)
 }
@@ -34,6 +35,8 @@ func (s *randomSelector[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 }
 
 // Leave ...
-func (s *randomSelector[Blackboard]) Leave(bb Blackboard) error {
+func (s *randomSelector[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*randomSelector[any])(nil)

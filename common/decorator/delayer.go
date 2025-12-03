@@ -47,6 +47,8 @@ func (d *delayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.
 }
 
 // Leave ...
-func (d *delayer[Blackboard]) Leave(bb Blackboard) error {
+func (d *delayer[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*delayer[any])(nil)

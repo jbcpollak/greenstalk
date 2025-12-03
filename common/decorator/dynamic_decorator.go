@@ -10,6 +10,7 @@ func DynamicDecoratorNamed[Blackboard any](name string, childFn func() (core.Nod
 	base := core.NewDynamicDecorator(core.BaseParams(name), childFn)
 	return &dynamicDecorator[Blackboard]{DynamicDecorator: base}
 }
+
 func DynamicDecorator[Blackboard any](childFn func() (core.Node[Blackboard], error)) core.Node[Blackboard] {
 	return DynamicDecoratorNamed("DynamicDecorator", childFn)
 }
@@ -33,6 +34,8 @@ func (d *dynamicDecorator[Blackboard]) Tick(ctx context.Context, bb Blackboard, 
 	return core.Update(ctx, d.Child, bb, evt)
 }
 
-func (d *dynamicDecorator[Blackboard]) Leave(bb Blackboard) error {
+func (d *dynamicDecorator[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*dynamicDecorator[any])(nil)

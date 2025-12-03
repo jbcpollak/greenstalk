@@ -12,6 +12,7 @@ import (
 func ActiveSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	return ActiveSequenceNamed("ActiveSequence", children...)
 }
+
 func ActiveSequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	base := core.NewComposite(core.BaseParams(name), children)
 	return &activeSequence[Blackboard]{Composite: base}
@@ -36,6 +37,8 @@ func (s *activeSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 	return core.SuccessResult()
 }
 
-func (s *activeSequence[Blackboard]) Leave(bb Blackboard) error {
+func (s *activeSequence[Blackboard]) Leave(context.Context, Blackboard) error {
 	return nil
 }
+
+var _ core.Node[any] = (*activeSequence[any])(nil)

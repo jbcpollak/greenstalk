@@ -13,6 +13,7 @@ func PersistentSequenceNamed[Blackboard any](name string, children ...core.Node[
 	base := core.NewComposite(core.BaseParams(name), children)
 	return &persistentSequence[Blackboard]{Composite: base}
 }
+
 func PersistentSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
 	return PersistentSequenceNamed("PersistentSequence", children...)
 }
@@ -36,7 +37,9 @@ func (s *persistentSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard
 	return core.SuccessResult()
 }
 
-func (s *persistentSequence[Blackboard]) Leave(bb Blackboard) error {
+func (s *persistentSequence[Blackboard]) Leave(context.Context, Blackboard) error {
 	s.CurrentChild = 0
 	return nil
 }
+
+var _ core.Node[any] = (*persistentSequence[any])(nil)
