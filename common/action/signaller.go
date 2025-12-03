@@ -12,7 +12,7 @@ type SignallerParams[T any] struct {
 }
 
 // Sends a Signal on the provided channel
-func Signaller[Blackboard any, T any](params SignallerParams[T]) *function_action[Blackboard] {
+func Signaller[T any](params SignallerParams[T]) *function_action {
 	fap := FunctionActionParams{
 		Func: func() core.ResultDetails {
 			// TODO: FunctionAction should pass some information to the function
@@ -22,6 +22,6 @@ func Signaller[Blackboard any, T any](params SignallerParams[T]) *function_actio
 			return core.SuccessResult()
 		},
 	}
-	base := core.NewLeaf[Blackboard](fap)
-	return &function_action[Blackboard]{Leaf: base}
+	base := core.NewLeaf(fap)
+	return &function_action{Leaf: base}
 }

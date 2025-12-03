@@ -17,20 +17,18 @@ func TestSignaller(t *testing.T) {
 
 	params := SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := Signaller[core.EmptyBlackboard](params)
+	signaller := Signaller(params)
 
-	var signalSequence = composite.Sequence(
+	signalSequence := composite.Sequence(
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		signalSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -61,20 +59,18 @@ func TestAsyncSignaller(t *testing.T) {
 
 	params := SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := Signaller[core.EmptyBlackboard](params)
+	signaller := Signaller(params)
 
-	var signalSequence = composite.Sequence(
+	signalSequence := composite.Sequence(
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		signalSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)

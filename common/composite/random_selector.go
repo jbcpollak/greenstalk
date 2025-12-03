@@ -8,35 +8,35 @@ import (
 )
 
 // RandomSelector creates a new random selector node.
-func RandomSelectorNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func RandomSelectorNamed(name string, children ...core.Node) core.Node {
 	base := core.NewComposite(core.BaseParams(name), children)
-	return &randomSelector[Blackboard]{Composite: base}
+	return &randomSelector{Composite: base}
 }
 
-func RandomSelector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func RandomSelector(children ...core.Node) core.Node {
 	return RandomSelectorNamed("RandomSelector", children...)
 }
 
 // randomSelector ...
-type randomSelector[Blackboard any] struct {
-	core.Composite[Blackboard, core.BaseParams]
+type randomSelector struct {
+	core.Composite[core.BaseParams]
 }
 
 // Activate ...
-func (s *randomSelector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	return s.Tick(ctx, bb, evt)
+func (s *randomSelector) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
+	return s.Tick(ctx, evt)
 }
 
 // Tick ...
-func (s *randomSelector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *randomSelector) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	index := rand.Intn(len(s.Children))
 	child := s.Children[index]
-	return core.Update(ctx, child, bb, evt)
+	return core.Update(ctx, child, evt)
 }
 
 // Leave ...
-func (s *randomSelector[Blackboard]) Leave(context.Context, Blackboard) error {
+func (s *randomSelector) Leave(context.Context) error {
 	return nil
 }
 
-var _ core.Node[any] = (*randomSelector[any])(nil)
+var _ core.Node = (*randomSelector)(nil)

@@ -9,29 +9,29 @@ import (
 // Sequence updates each child in order, returning success only if
 // all children succeed. If a child returns Running, the sequence node
 // will resume execution from that child the next tick.
-func SequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func SequenceNamed(name string, children ...core.Node) core.Node {
 	base := core.NewComposite(core.BaseParams(name), children)
-	return &sequence[Blackboard]{Composite: base}
+	return &sequence{Composite: base}
 }
 
-func Sequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func Sequence(children ...core.Node) core.Node {
 	return SequenceNamed("Sequence", children...)
 }
 
-type sequence[Blackboard any] struct {
-	core.Composite[Blackboard, core.BaseParams]
+type sequence struct {
+	core.Composite[core.BaseParams]
 }
 
-func (s *sequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *sequence) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	s.CurrentChild = 0
 
 	// Tick as expected
-	return s.Tick(ctx, bb, evt)
+	return s.Tick(ctx, evt)
 }
 
-func (s *sequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *sequence) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	for s.CurrentChild < len(s.Children) {
-		result := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
+		result := core.Update(ctx, s.Children[s.CurrentChild], evt)
 		if result.Status() != core.StatusSuccess {
 			return result
 		}
@@ -40,8 +40,8 @@ func (s *sequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	return core.SuccessResult()
 }
 
-func (s *sequence[Blackboard]) Leave(context.Context, Blackboard) error {
+func (s *sequence) Leave(context.Context) error {
 	return nil
 }
 
-var _ core.Node[any] = (*sequence[any])(nil)
+var _ core.Node = (*sequence)(nil)

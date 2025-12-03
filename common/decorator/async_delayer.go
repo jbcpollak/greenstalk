@@ -17,10 +17,10 @@ type AsyncDelayerParams struct {
 }
 
 // AsyncDelayer ...
-func AsyncDelayer[Blackboard any](params AsyncDelayerParams, child core.Node[Blackboard]) core.Node[Blackboard] {
+func AsyncDelayer(params AsyncDelayerParams, child core.Node) core.Node {
 	base := core.NewDecorator(params, child)
 
-	d := &asyncdelayer[Blackboard]{
+	d := &asyncdelayer{
 		Decorator: base,
 		delay:     params.Delay,
 	}
@@ -28,8 +28,8 @@ func AsyncDelayer[Blackboard any](params AsyncDelayerParams, child core.Node[Bla
 }
 
 // delayer ...
-type asyncdelayer[Blackboard any] struct {
-	core.Decorator[Blackboard, AsyncDelayerParams]
+type asyncdelayer struct {
+	core.Decorator[AsyncDelayerParams]
 	delay time.Duration // delay in milliseconds
 	start time.Time
 }
@@ -43,7 +43,7 @@ func (e DelayerFinishedEvent) TargetNodeId() uuid.UUID {
 	return e.targetNodeId
 }
 
-func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.EnqueueFn) error {
+func (d *asyncdelayer) doDelay(ctx context.Context, enqueue core.EnqueueFn) error {
 	t := time.NewTimer(d.delay)
 	defer t.Stop()
 	select {
@@ -56,7 +56,7 @@ func (d *asyncdelayer[Blackboard]) doDelay(ctx context.Context, enqueue core.Enq
 }
 
 // Activate ...
-func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (d *asyncdelayer) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	d.start = time.Now()
 
 	internal.Logger.Info("Returning AsyncRunning", "name", d.Name())
@@ -65,13 +65,13 @@ func (d *asyncdelayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, 
 }
 
 // Tick ...
-func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (d *asyncdelayer) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	internal.Logger.Info("Tick", "name", d.Name())
 
 	if dfe, ok := evt.(DelayerFinishedEvent); ok {
 		if dfe.TargetNodeId() == d.Id() {
 			internal.Logger.Info("DelayerFinishedEvent", "name", d.Name())
-			return core.Update(ctx, d.Child, bb, evt)
+			return core.Update(ctx, d.Child, evt)
 		}
 	}
 
@@ -79,8 +79,8 @@ func (d *asyncdelayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt 
 }
 
 // Leave ...
-func (d *asyncdelayer[Blackboard]) Leave(context.Context, Blackboard) error {
+func (d *asyncdelayer) Leave(context.Context) error {
 	return nil
 }
 
-var _ core.Node[any] = (*asyncdelayer[any])(nil)
+var _ core.Node = (*asyncdelayer)(nil)

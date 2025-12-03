@@ -12,7 +12,7 @@ import (
 // success/failReq is the minimum amount of nodes required to
 // succeed/fail for the parallel sequence node itself to succeed/fail.
 // A value of 0 for either node means that all nodes must succeed/fail.
-func ParallelNamed[Blackboard any](name string, successReq, failReq int, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func ParallelNamed(name string, successReq, failReq int, children ...core.Node) core.Node {
 	base := core.NewComposite(core.BaseParams(name), children)
 	if successReq == 0 {
 		successReq = len(children)
@@ -20,7 +20,7 @@ func ParallelNamed[Blackboard any](name string, successReq, failReq int, childre
 	if failReq == 0 {
 		failReq = len(children)
 	}
-	return &parallel[Blackboard]{
+	return &parallel{
 		base,
 		successReq,
 		failReq,
@@ -30,12 +30,12 @@ func ParallelNamed[Blackboard any](name string, successReq, failReq int, childre
 	}
 }
 
-func Parallel[Blackboard any](successReq, failReq int, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func Parallel(successReq, failReq int, children ...core.Node) core.Node {
 	return ParallelNamed("Parallel", successReq, failReq, children...)
 }
 
-type parallel[Blackboard any] struct {
-	core.Composite[Blackboard, core.BaseParams]
+type parallel struct {
+	core.Composite[core.BaseParams]
 	successReq int
 	failReq    int
 	succeeded  int
@@ -43,7 +43,7 @@ type parallel[Blackboard any] struct {
 	completed  []bool
 }
 
-func (s *parallel[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *parallel) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	s.succeeded = 0
 	s.failed = 0
 
@@ -51,10 +51,10 @@ func (s *parallel[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt 
 		s.completed[i] = false
 	}
 
-	return s.Tick(ctx, bb, evt)
+	return s.Tick(ctx, evt)
 }
 
-func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *parallel) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	runningResultDetails := []core.InitRunningResultDetails{}
 
 	// Update every child that has not completed yet every tick.
@@ -67,7 +67,7 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 
 		// Update a child and count whether it succeeded or failed,
 		// and mark it as completed in either of those two cases.
-		result := core.Update(ctx, s.Children[i], bb, evt)
+		result := core.Update(ctx, s.Children[i], evt)
 		status := result.Status()
 		switch status {
 		case core.StatusSuccess:
@@ -102,8 +102,8 @@ func (s *parallel[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	}
 }
 
-func (s *parallel[Blackboard]) Leave(context.Context, Blackboard) error {
+func (s *parallel) Leave(context.Context) error {
 	return nil
 }
 
-var _ core.Node[any] = (*parallel[any])(nil)
+var _ core.Node = (*parallel)(nil)

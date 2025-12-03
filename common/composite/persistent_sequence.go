@@ -9,26 +9,26 @@ import (
 // PersistentSequence updates each child in order. If a child
 // returns Failure or Running, this node returns the same value,
 // and resumes execution from the same child node the next tick.
-func PersistentSequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func PersistentSequenceNamed(name string, children ...core.Node) core.Node {
 	base := core.NewComposite(core.BaseParams(name), children)
-	return &persistentSequence[Blackboard]{Composite: base}
+	return &persistentSequence{Composite: base}
 }
 
-func PersistentSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func PersistentSequence(children ...core.Node) core.Node {
 	return PersistentSequenceNamed("PersistentSequence", children...)
 }
 
-type persistentSequence[Blackboard any] struct {
-	core.Composite[Blackboard, core.BaseParams]
+type persistentSequence struct {
+	core.Composite[core.BaseParams]
 }
 
-func (s *persistentSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	return s.Tick(ctx, bb, evt)
+func (s *persistentSequence) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
+	return s.Tick(ctx, evt)
 }
 
-func (s *persistentSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *persistentSequence) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	for s.CurrentChild < len(s.Children) {
-		result := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
+		result := core.Update(ctx, s.Children[s.CurrentChild], evt)
 		if result.Status() != core.StatusSuccess {
 			return result
 		}
@@ -37,9 +37,9 @@ func (s *persistentSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard
 	return core.SuccessResult()
 }
 
-func (s *persistentSequence[Blackboard]) Leave(context.Context, Blackboard) error {
+func (s *persistentSequence) Leave(context.Context) error {
 	s.CurrentChild = 0
 	return nil
 }
 
-var _ core.Node[any] = (*persistentSequence[any])(nil)
+var _ core.Node = (*persistentSequence)(nil)

@@ -16,28 +16,28 @@ func (p FailParams) Name() string {
 }
 
 // Fail returns a new fail node, which always fails in one tick.
-func Fail[Blackboard any](params FailParams) *fail[Blackboard] {
-	base := core.NewLeaf[Blackboard](params)
-	return &fail[Blackboard]{Leaf: base}
+func Fail(params FailParams) *fail {
+	base := core.NewLeaf(params)
+	return &fail{Leaf: base}
 }
 
 // fail ...
-type fail[Blackboard any] struct {
-	core.Leaf[Blackboard, FailParams]
+type fail struct {
+	core.Leaf[FailParams]
 }
 
 // Activate ...
-func (a *fail[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (a *fail) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	return core.FailureResult()
 }
 
 // Tick ...
-func (a *fail[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (a *fail) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	// Should never get here
 	return core.ErrorResult(fmt.Errorf("Fail node should not be ticked"))
 }
 
 // Leave ...
-func (a *fail[Blackboard]) Leave(context.Context, Blackboard) error {
+func (a *fail) Leave(context.Context) error {
 	return nil
 }

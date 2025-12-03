@@ -5,8 +5,7 @@ import (
 )
 
 // UntilSuccess updates its child until it returns Success.
-func UntilSuccessNamed[Blackboard any](name string, child core.Node[Blackboard]) core.Node[Blackboard] {
-
+func UntilSuccessNamed(name string, child core.Node) core.Node {
 	untilSuccess := func(result core.ResultDetails) bool {
 		return result.Status() == core.StatusSuccess
 	}
@@ -16,6 +15,7 @@ func UntilSuccessNamed[Blackboard any](name string, child core.Node[Blackboard])
 		Until:      untilSuccess,
 	}, child)
 }
-func UntilSuccess[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
+
+func UntilSuccess(child core.Node) core.Node {
 	return UntilSuccessNamed("UntilSuccess", child)
 }

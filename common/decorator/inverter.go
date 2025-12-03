@@ -7,27 +7,27 @@ import (
 )
 
 // Inverter ...
-func InverterNamed[Blackboard any](name string, child core.Node[Blackboard]) core.Node[Blackboard] {
+func InverterNamed(name string, child core.Node) core.Node {
 	base := core.NewDecorator(core.BaseParams(name), child)
-	return &inverter[Blackboard]{Decorator: base}
+	return &inverter{Decorator: base}
 }
 
-func Inverter[Blackboard any](child core.Node[Blackboard]) core.Node[Blackboard] {
+func Inverter(child core.Node) core.Node {
 	return InverterNamed("Inverter", child)
 }
 
 // inverter ...
-type inverter[Blackboard any] struct {
-	core.Decorator[Blackboard, core.BaseParams]
+type inverter struct {
+	core.Decorator[core.BaseParams]
 }
 
-func (d *inverter[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	return d.Tick(ctx, bb, evt)
+func (d *inverter) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
+	return d.Tick(ctx, evt)
 }
 
 // Tick ...
-func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	switch result := core.Update(ctx, d.Child, bb, evt); result.Status() {
+func (d *inverter) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
+	switch result := core.Update(ctx, d.Child, evt); result.Status() {
 	case core.StatusSuccess:
 		return core.FailureResult()
 	case core.StatusFailure:
@@ -38,8 +38,8 @@ func (d *inverter[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 }
 
 // Leave ...
-func (d *inverter[Blackboard]) Leave(context.Context, Blackboard) error {
+func (d *inverter) Leave(context.Context) error {
 	return nil
 }
 
-var _ core.Node[any] = (*inverter[any])(nil)
+var _ core.Node = (*inverter)(nil)

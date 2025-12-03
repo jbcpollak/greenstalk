@@ -11,20 +11,17 @@ import (
 )
 
 // BehaviorTree ...
-type behaviorTree[Blackboard any] struct {
-	ctx        context.Context
-	Root       core.Node[Blackboard]
-	Blackboard Blackboard
-	events     chan core.Event
-	visitors   []core.Visitor[Blackboard]
+type behaviorTree struct {
+	ctx      context.Context
+	Root     core.Node
+	events   chan core.Event
+	visitors []core.Visitor
 }
 
-func NewBehaviorTree[Blackboard any](
-	root core.Node[Blackboard],
-	bb Blackboard,
-	opts ...TreeOption[Blackboard],
-) (*behaviorTree[Blackboard], error) {
-
+func NewBehaviorTree(
+	root core.Node,
+	opts ...TreeOption,
+) (*behaviorTree, error) {
 	var eb internal.ErrorBuilder
 	eb.SetMessage("NewBehaviorTree")
 	if root == nil {
@@ -35,11 +32,10 @@ func NewBehaviorTree[Blackboard any](
 		return nil, eb.Error()
 	}
 
-	tree := &behaviorTree[Blackboard]{
-		ctx:        context.TODO(),
-		Root:       root,
-		Blackboard: bb,
-		events:     make(chan core.Event, 100 /* arbitrary */),
+	tree := &behaviorTree{
+		ctx:    context.TODO(),
+		Root:   root,
+		events: make(chan core.Event, 100 /* arbitrary */),
 	}
 
 	// Apply all options to the tree.
@@ -51,8 +47,8 @@ func NewBehaviorTree[Blackboard any](
 }
 
 // Update propagates an update call down the behavior tree.
-func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
-	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
+func (bt *behaviorTree) Update(evt core.Event) core.ResultDetails {
+	result := core.Update(bt.ctx, bt.Root, evt)
 
 	status := result.Status()
 	if status == core.StatusError {
@@ -109,7 +105,7 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 	return result
 }
 
-func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
+func (bt *behaviorTree) EventLoop(evt core.Event) error {
 	// Put the first event on the queue.
 	bt.events <- evt
 
@@ -138,11 +134,11 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 
 // String creates a string representation of the behavior tree
 // by traversing it and writing lexical elements to a string
-func (bt *behaviorTree[Blackboard]) String() string {
+func (bt *behaviorTree) String() string {
 	return util.NodeToString(bt.Root)
 }
 
-func (bt *behaviorTree[Blackboard]) Enqueue(ctx context.Context, evt core.Event) error {
+func (bt *behaviorTree) Enqueue(ctx context.Context, evt core.Event) error {
 	select {
 	case <-bt.ctx.Done():
 		return bt.ctx.Err()

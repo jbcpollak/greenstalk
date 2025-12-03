@@ -24,7 +24,7 @@ func TestUntilSuccess(t *testing.T) {
 
 	countChan := make(chan uint)
 
-	child := action.Counter[core.EmptyBlackboard](action.CounterParams{
+	child := action.Counter(action.CounterParams{
 		BaseParams: "Counter",
 		Limit:      3,
 		CountChan:  countChan,
@@ -34,15 +34,14 @@ func TestUntilSuccess(t *testing.T) {
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		untilFailure,
-		action.Succeed[core.EmptyBlackboard](action.SucceedParams{
+		action.Succeed(action.SucceedParams{
 			BaseParams: "Success",
 		}),
 		signaller,
@@ -50,9 +49,8 @@ func TestUntilSuccess(t *testing.T) {
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithContext(ctx),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)

@@ -12,12 +12,12 @@ import (
 
 // NodeToString returns a string representation
 // of a tree node and all its children.
-func NodeToString[Blackboard any](node core.Node[Blackboard]) string {
+func NodeToString(node core.Node) string {
 	var b strings.Builder
 	fmt.Println()
 
-	appendToBuffer := func(node core.Walkable[Blackboard], level int) {
-		appendNode[Blackboard](node, level, &b)
+	appendToBuffer := func(node core.Walkable, level int) {
+		appendNode(node, level, &b)
 	}
 
 	node.Walk(appendToBuffer, 0)
@@ -25,7 +25,7 @@ func NodeToString[Blackboard any](node core.Node[Blackboard]) string {
 	return b.String()
 }
 
-func appendNode[Blackboard any](node core.Walkable[Blackboard], level int, b *strings.Builder) {
+func appendNode(node core.Walkable, level int, b *strings.Builder) {
 	indent := strings.Repeat("    ", level)
 	b.WriteString(indent + node.String() + "\n")
 }
@@ -33,12 +33,12 @@ func appendNode[Blackboard any](node core.Walkable[Blackboard], level int, b *st
 // PrintTreeInColor prints the tree with colors representing node state.
 //
 // Red = Failure, Yellow = Running, Green = Success, Magenta = Invalid.
-func PrintTreeInColor[Blackboard any](node core.Walkable[Blackboard]) {
+func PrintTreeInColor(node core.Walkable) {
 	node.Walk(printInColor, 0)
 	fmt.Println()
 }
 
-func printInColor[Blackboard any](node core.Walkable[Blackboard], level int) {
+func printInColor(node core.Walkable, level int) {
 	indent := strings.Repeat("    ", level)
 
 	status := node.Result().Status()
@@ -50,18 +50,17 @@ func printInColor[Blackboard any](node core.Walkable[Blackboard], level int) {
 }
 
 // Logs the tree to a logger
-func PrintTreeToLog[Blackboard any](node core.Walkable[Blackboard]) {
+func PrintTreeToLog(node core.Walkable) {
 	node.Walk(printToLog, 0)
 }
 
-func printToLog[Blackboard any](node core.Walkable[Blackboard], level int) {
+func printToLog(node core.Walkable, level int) {
 	indent := strings.Repeat("    ", level)
 
 	status := node.Result().Status()
 	symbol := symbolForStatus[status]
 
 	internal.Logger.Info(indent + node.String() + " " + symbol)
-
 }
 
 var colorForStatus = map[core.Status]color.Attribute{

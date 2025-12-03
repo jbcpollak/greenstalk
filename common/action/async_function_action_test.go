@@ -12,7 +12,6 @@ import (
 )
 
 func TestAsyncFunctionAction(t *testing.T) {
-
 	asyncFunctionExpectedResultsMap := map[core.Status]func(ctx context.Context) core.ResultDetails{}
 
 	asyncFunctionExpectedResultsMap[core.StatusSuccess] = func(ctx context.Context) core.ResultDetails {
@@ -39,7 +38,7 @@ func TestAsyncFunctionAction(t *testing.T) {
 }
 
 func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(ctx context.Context) core.ResultDetails, errMsg string) {
-	asyncFunctionAction := AsyncFunctionAction[core.EmptyBlackboard](AsyncFunctionActionParams{
+	asyncFunctionAction := AsyncFunctionAction(AsyncFunctionActionParams{
 		BaseParams: "asyncFunctionNode",
 		Func:       fn,
 	})
@@ -49,7 +48,7 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 	nodeWG := sync.WaitGroup{}
 	nodeWG.Add(1)
 	asyncNodeStatuses := []core.Status{}
-	visitor := func(node core.Walkable[core.EmptyBlackboard]) {
+	visitor := func(node core.Walkable) {
 		if node.Id() == asyncFunctionAction.Id() {
 			status := node.Result().Status()
 			asyncNodeStatuses = append(asyncNodeStatuses, status)
@@ -61,11 +60,9 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 
 	tree, err := greenstalk.NewBehaviorTree(
 		asyncFunctionAction,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
+		greenstalk.WithContext(ctx),
 		greenstalk.WithVisitors(visitor),
 	)
-
 	if err != nil {
 		cancel()
 		t.Errorf("Unexpectedly got %v", err)
@@ -97,5 +94,4 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 	if tree.Root.Result().Status() != expectedStatus {
 		t.Errorf("Expected %v got %v", expectedStatus, tree.Root.Result().Status())
 	}
-
 }

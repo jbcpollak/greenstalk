@@ -12,17 +12,17 @@ import (
 // Example usage:
 //
 //	p := NewBehaviorTree(root, WithInput(someInput), WithOutput(someOutput))
-type TreeOption[Blackboard any] func(*behaviorTree[Blackboard])
+type TreeOption func(*behaviorTree)
 
 // WithVisitor lets you specify a visitor which is called after every tick and visits every node.
-func WithVisitors[Blackboard any](v ...core.Visitor[Blackboard]) TreeOption[Blackboard] {
-	return func(p *behaviorTree[Blackboard]) {
+func WithVisitors(v ...core.Visitor) TreeOption {
+	return func(p *behaviorTree) {
 		p.visitors = v
 	}
 }
 
-func WithContext[Blackboard any](ctx context.Context) TreeOption[Blackboard] {
-	return func(p *behaviorTree[Blackboard]) {
+func WithContext(ctx context.Context) TreeOption {
+	return func(p *behaviorTree) {
 		p.ctx = ctx
 	}
 }

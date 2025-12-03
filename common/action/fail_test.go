@@ -12,16 +12,15 @@ import (
 )
 
 func TestFail(t *testing.T) {
-	fail := Fail[core.EmptyBlackboard](FailParams{})
+	fail := Fail(FailParams{})
 
-	var failSequence = composite.Sequence(
+	failSequence := composite.Sequence(
 		fail,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		failSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -31,7 +30,6 @@ func TestFail(t *testing.T) {
 	result := tree.Update(evt)
 	if result.Status() != core.StatusFailure {
 		t.Errorf("Unexpectedly got %v", result)
-
 	}
 
 	internal.Logger.Info("Done!")

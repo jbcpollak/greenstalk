@@ -19,11 +19,6 @@ import (
 	. "github.com/jbcpollak/greenstalk/common/decorator"
 )
 
-type TestBlackboard struct {
-	id    int
-	count uint
-}
-
 var n = 0
 
 func untilTwo(status core.ResultDetails) bool {
@@ -35,8 +30,8 @@ var synchronousRoot = Sequence(
 	RepeatUntil(RepeatUntilParams{
 		BaseParams: "RepeatUntilTwo",
 		Until:      untilTwo,
-	}, Fail[TestBlackboard](FailParams{})),
-	Succeed[TestBlackboard](SucceedParams{}),
+	}, Fail(FailParams{})),
+	Succeed(SucceedParams{}),
 )
 
 func TestUpdate(t *testing.T) {
@@ -47,9 +42,8 @@ func TestUpdate(t *testing.T) {
 
 	tree, err := NewBehaviorTree(
 		synchronousRoot,
-		TestBlackboard{id: 42},
-		WithContext[TestBlackboard](ctx),
-		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
+		WithContext(ctx),
+		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -72,13 +66,13 @@ var countChan = make(chan uint)
 var (
 	delay            = 100
 	asynchronousRoot = Sequence(
-		// Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
+		// Repeater(core.Params{"n": 2}, Fail(nil, nil)),
 		AsyncDelayer(
 			AsyncDelayerParams{
 				BaseParams: core.BaseParams("First"),
 				Delay:      time.Duration(delay) * time.Millisecond,
 			},
-			Counter[TestBlackboard](CounterParams{
+			Counter(CounterParams{
 				BaseParams: "First Counter",
 				Limit:      10,
 				CountChan:  countChan,
@@ -89,7 +83,7 @@ var (
 				BaseParams: core.BaseParams("Second"),
 				Delay:      time.Duration(delay) * time.Millisecond,
 			},
-			Counter[TestBlackboard](CounterParams{
+			Counter(CounterParams{
 				BaseParams: "Second Counter",
 				Limit:      10,
 				CountChan:  countChan,
@@ -115,11 +109,10 @@ func TestEventLoop(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	bb := TestBlackboard{id: 42, count: 0}
 	tree, err := NewBehaviorTree(
-		asynchronousRoot, bb,
-		WithContext[TestBlackboard](ctx),
-		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
+		asynchronousRoot,
+		WithContext(ctx),
+		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -174,11 +167,11 @@ func TestEventLoop(t *testing.T) {
 }
 
 type errorAsyncNode struct {
-	core.Leaf[TestBlackboard, core.BaseParams]
+	core.Leaf[core.BaseParams]
 	wg *sync.WaitGroup
 }
 
-func (a *errorAsyncNode) Activate(ctx context.Context, bb TestBlackboard, evt core.Event) core.ResultDetails {
+func (a *errorAsyncNode) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	errorFunc := func(ctx context.Context, enqueue core.EnqueueFn) error {
 		a.wg.Done()
 		return fmt.Errorf("Expected error during tests")
@@ -186,18 +179,18 @@ func (a *errorAsyncNode) Activate(ctx context.Context, bb TestBlackboard, evt co
 	return core.InitRunningResult(errorFunc)
 }
 
-func (a *errorAsyncNode) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) core.ResultDetails {
+func (a *errorAsyncNode) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	panic("Should never get ticked during tests")
 }
 
-func (a *errorAsyncNode) Leave(context.Context, TestBlackboard) error {
+func (a *errorAsyncNode) Leave(context.Context) error {
 	panic("Should never leave during tests")
 }
 
-var _ core.Node[TestBlackboard] = (*errorAsyncNode)(nil)
+var _ core.Node = (*errorAsyncNode)(nil)
 
 func makeErrorAsyncNode(wg *sync.WaitGroup) *errorAsyncNode {
-	base := core.NewLeaf[TestBlackboard](
+	base := core.NewLeaf(
 		core.BaseParams("ErrorAsyncNode"),
 	)
 	return &errorAsyncNode{
@@ -212,15 +205,13 @@ func TestAsyncErrorInTree(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	bb := TestBlackboard{id: 42, count: 0}
-
 	nodeWG := sync.WaitGroup{}
 	nodeWG.Add(1)
 	errorFuncNode := makeErrorAsyncNode(&nodeWG)
 	tree, err := NewBehaviorTree(
-		errorFuncNode, bb,
-		WithContext[TestBlackboard](ctx),
-		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
+		errorFuncNode,
+		WithContext(ctx),
+		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)

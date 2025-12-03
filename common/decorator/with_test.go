@@ -23,7 +23,7 @@ func TestWith(t *testing.T) {
 	sigChan := make(chan bool)
 
 	childCalled := false
-	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+	child := action.FunctionAction(action.FunctionActionParams{
 		Func: func() core.ResultDetails {
 			childCalled = true
 			return core.SuccessResult()
@@ -41,22 +41,20 @@ func TestWith(t *testing.T) {
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		with,
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithContext(ctx),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -103,7 +101,7 @@ func TestWithCloserError(t *testing.T) {
 	sigChan := make(chan bool)
 
 	childCalled := false
-	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+	child := action.FunctionAction(action.FunctionActionParams{
 		Func: func() core.ResultDetails {
 			childCalled = true
 			return core.SuccessResult()
@@ -122,22 +120,20 @@ func TestWithCloserError(t *testing.T) {
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		with,
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithContext(ctx),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -184,7 +180,7 @@ func TestWithInitError(t *testing.T) {
 	sigChan := make(chan bool)
 
 	childCalled := false
-	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+	child := action.FunctionAction(action.FunctionActionParams{
 		Func: func() core.ResultDetails {
 			childCalled = true
 			return core.SuccessResult()
@@ -199,22 +195,20 @@ func TestWithInitError(t *testing.T) {
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		with,
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithContext(ctx),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Should net error here %v", err)
