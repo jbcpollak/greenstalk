@@ -3,7 +3,7 @@ package greenstalk
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // TreeOption is used to set options when initializing a BehaviorTree.

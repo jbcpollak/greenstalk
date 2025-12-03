@@ -1,8 +1,8 @@
 package state
 
 import (
-	"github.com/jbcpollak/greenstalk/common/action"
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/common/action"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // This node resets all provided states and returns SuccessStatus

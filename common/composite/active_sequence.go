@@ -3,7 +3,7 @@ package composite
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // ActiveSequence ticks each child in order. Returns success if

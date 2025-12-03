@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/rand"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // RandomSelector creates a new random selector node.

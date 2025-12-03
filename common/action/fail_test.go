@@ -3,12 +3,11 @@ package action
 import (
 	"testing"
 
-	"github.com/jbcpollak/greenstalk"
-
-	"github.com/jbcpollak/greenstalk/common/composite"
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/common/composite"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 )
 
 func TestFail(t *testing.T) {

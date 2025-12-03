@@ -3,7 +3,7 @@ package decorator
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 func DynamicDecoratorNamed(name string, childFn func() (core.Node, error)) core.Node {

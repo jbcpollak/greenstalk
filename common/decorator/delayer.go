@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 type DelayerParams struct {

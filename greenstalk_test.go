@@ -7,16 +7,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 
 	// Use dot imports to make a tree definition look nice.
 	// Be careful when doing this! These packages export
 	// common word identifiers such as "Fail" and "Sequence".
-	. "github.com/jbcpollak/greenstalk/common/action"
-	. "github.com/jbcpollak/greenstalk/common/composite"
-	. "github.com/jbcpollak/greenstalk/common/decorator"
+	. "github.com/jbcpollak/greenstalk/v2/common/action"
+	. "github.com/jbcpollak/greenstalk/v2/common/composite"
+	. "github.com/jbcpollak/greenstalk/v2/common/decorator"
 )
 
 var n = 0

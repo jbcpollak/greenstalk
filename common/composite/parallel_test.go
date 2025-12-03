@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jbcpollak/greenstalk"
-	"github.com/jbcpollak/greenstalk/common/action"
-	"github.com/jbcpollak/greenstalk/common/decorator"
-	"github.com/jbcpollak/greenstalk/common/state"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/common/action"
+	"github.com/jbcpollak/greenstalk/v2/common/decorator"
+	"github.com/jbcpollak/greenstalk/v2/common/state"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 type actionMessage struct {

@@ -3,7 +3,7 @@ package composite
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // Parallel updates all its children in parallel, i.e. every frame.

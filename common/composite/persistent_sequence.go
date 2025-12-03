@@ -3,7 +3,7 @@ package composite
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // PersistentSequence updates each child in order. If a child

@@ -1,7 +1,7 @@
 package decorator
 
 import (
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // UntilSuccess updates its child until it returns Success.

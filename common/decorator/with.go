@@ -3,7 +3,7 @@ package decorator
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 func WithNamed(name string, createCloseable func() (closeFn func() error, err error), child core.Node) core.Node {

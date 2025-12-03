@@ -7,8 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jbcpollak/greenstalk"
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 func TestAsyncFunctionAction(t *testing.T) {

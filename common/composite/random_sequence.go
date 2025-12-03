@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/rand"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // RandomSequence works just like Sequence, except it shuffles
