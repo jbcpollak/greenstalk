@@ -6,26 +6,13 @@ import (
 	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
-func WithNamed(name string, createCloseable func() (closeFn func() error, err error), child core.Node) core.Node {
-	base := core.NewDecorator(core.BaseParams(name), child)
-	return &with{Decorator: base, createCloseable: func(ctx context.Context) (func(context.Context) error, error) {
-		closeFn, err := createCloseable()
-		if err != nil {
-			return nil, err
-		}
-		return func(context.Context) error {
-			return closeFn()
-		}, nil
-	}}
-}
-
-func With(createCloseable func() (closeFn func() error, err error), child core.Node) core.Node {
-	return WithNamed("With", createCloseable, child)
-}
-
-func WithNamedContext(name string, createCloseable func(context.Context) (closeFn func(context.Context) error, err error), child core.Node) core.Node {
+func WithNamed(name string, createCloseable func(context.Context) (closeFn func(context.Context) error, err error), child core.Node) core.Node {
 	base := core.NewDecorator(core.BaseParams(name), child)
 	return &with{Decorator: base, createCloseable: createCloseable}
+}
+
+func With(createCloseable func(context.Context) (closeFn func(context.Context) error, err error), child core.Node) core.Node {
+	return WithNamed("With", createCloseable, child)
 }
 
 type with struct {

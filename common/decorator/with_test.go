@@ -31,11 +31,11 @@ func TestWith(t *testing.T) {
 	})
 
 	closeCalled := false
-	closeFn := func() error {
+	closeFn := func(context.Context) error {
 		closeCalled = true
 		return nil
 	}
-	with := With(func() (func() error, error) {
+	with := With(func(context.Context) (func(context.Context) error, error) {
 		return closeFn, nil
 	}, child)
 
@@ -109,12 +109,12 @@ func TestWithCloserError(t *testing.T) {
 	})
 
 	closeCalled := false
-	closeFn := func() error {
+	closeFn := func(context.Context) error {
 		closeCalled = true
 		return fmt.Errorf("This is an expected error")
 	}
 
-	with := With(func() (func() error, error) {
+	with := With(func(context.Context) (func(context.Context) error, error) {
 		return closeFn, nil
 	}, child)
 
@@ -189,7 +189,7 @@ func TestWithInitError(t *testing.T) {
 
 	closeCalled := false
 
-	with := With(func() (func() error, error) {
+	with := With(func(context.Context) (func(context.Context) error, error) {
 		return nil, fmt.Errorf("This is an error")
 	}, child)
 
