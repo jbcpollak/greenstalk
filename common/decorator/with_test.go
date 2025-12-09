@@ -77,8 +77,7 @@ func TestWith(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusSuccess {
+	if status := testSequence.Result().Status(); status != core.StatusSuccess {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
@@ -154,8 +153,7 @@ func TestWithCloserError(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusError {
+	if status := testSequence.Result().Status(); status != core.StatusError {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
@@ -227,8 +225,7 @@ func TestWithInitError(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusError {
+	if status := testSequence.Result().Status(); status != core.StatusError {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 

@@ -10,9 +10,11 @@ import (
 	"github.com/jbcpollak/greenstalk/v2/util"
 )
 
-// BehaviorTree ...
-type behaviorTree struct {
-	Root     core.Node
+// Tree represents a behavior tree.
+//
+// It must be initialized by calling [NewBehaviorTree].
+type Tree struct {
+	root     core.Node
 	events   chan core.Event
 	visitors []core.Visitor
 }
@@ -20,7 +22,7 @@ type behaviorTree struct {
 func NewBehaviorTree(
 	root core.Node,
 	opts ...TreeOption,
-) (*behaviorTree, error) {
+) (*Tree, error) {
 	var eb internal.ErrorBuilder
 	eb.SetMessage("NewBehaviorTree")
 	if root == nil {
@@ -31,8 +33,8 @@ func NewBehaviorTree(
 		return nil, eb.Error()
 	}
 
-	tree := &behaviorTree{
-		Root:   root,
+	tree := &Tree{
+		root:   root,
 		events: make(chan core.Event, 100 /* arbitrary */),
 	}
 
@@ -45,8 +47,8 @@ func NewBehaviorTree(
 }
 
 // Update propagates an update call down the behavior tree.
-func (bt *behaviorTree) Update(ctx context.Context, evt core.Event) core.ResultDetails {
-	result := core.Update(ctx, bt.Root, evt)
+func (bt *Tree) Update(ctx context.Context, evt core.Event) core.ResultDetails {
+	result := core.Update(ctx, bt.root, evt)
 
 	status := result.Status()
 	if status == core.StatusError {
@@ -97,7 +99,7 @@ func (bt *behaviorTree) Update(ctx context.Context, evt core.Event) core.ResultD
 	}
 
 	for _, visitor := range bt.visitors {
-		visitor(bt.Root)
+		visitor(bt.root)
 	}
 
 	return result
@@ -105,7 +107,7 @@ func (bt *behaviorTree) Update(ctx context.Context, evt core.Event) core.ResultD
 
 // EventLoop runs the behavior tree, starting with the provided initial event,
 // continuously until either the context is canceled or an error occurs.
-func (bt *behaviorTree) EventLoop(ctx context.Context, evt core.Event) error {
+func (bt *Tree) EventLoop(ctx context.Context, evt core.Event) error {
 	// Put the first event on the queue.
 	bt.events <- evt
 
@@ -134,11 +136,11 @@ func (bt *behaviorTree) EventLoop(ctx context.Context, evt core.Event) error {
 
 // String creates a string representation of the behavior tree
 // by traversing it and writing lexical elements to a string
-func (bt *behaviorTree) String() string {
-	return util.NodeToString(bt.Root)
+func (bt *Tree) String() string {
+	return util.NodeToString(bt.root)
 }
 
-func (bt *behaviorTree) Enqueue(ctx context.Context, evt core.Event) error {
+func (bt *Tree) Enqueue(ctx context.Context, evt core.Event) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()

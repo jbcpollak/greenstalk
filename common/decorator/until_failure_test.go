@@ -80,8 +80,7 @@ func TestUntilFailure(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusSuccess {
+	if status := testSequence.Result().Status(); status != core.StatusSuccess {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 }

@@ -89,7 +89,7 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 		t.Errorf("Expected %v got %v", []core.Status{core.StatusRunning, expectedStatus}, asyncNodeStatuses)
 	}
 
-	if tree.Root.Result().Status() != expectedStatus {
-		t.Errorf("Expected %v got %v", expectedStatus, tree.Root.Result().Status())
+	if asyncFunctionAction.Result().Status() != expectedStatus {
+		t.Errorf("Expected %v got %v", expectedStatus, asyncFunctionAction.Result().Status())
 	}
 }

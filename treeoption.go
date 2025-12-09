@@ -10,11 +10,11 @@ import (
 // Example usage:
 //
 //	p := NewBehaviorTree(root, WithInput(someInput), WithOutput(someOutput))
-type TreeOption func(*behaviorTree)
+type TreeOption func(*Tree)
 
 // WithVisitor lets you specify a visitor which is called after every tick and visits every node.
 func WithVisitors(v ...core.Visitor) TreeOption {
-	return func(p *behaviorTree) {
+	return func(p *Tree) {
 		p.visitors = v
 	}
 }
