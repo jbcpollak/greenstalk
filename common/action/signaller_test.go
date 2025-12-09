@@ -34,7 +34,7 @@ func TestSignaller(t *testing.T) {
 	}
 
 	evt := core.DefaultEvent{}
-	result := tree.Update(evt)
+	result := tree.Update(t.Context(), evt)
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -77,7 +77,7 @@ func TestAsyncSignaller(t *testing.T) {
 
 	evt := core.DefaultEvent{}
 	go func() {
-		err := tree.EventLoop(evt)
+		err := tree.EventLoop(t.Context(), evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}

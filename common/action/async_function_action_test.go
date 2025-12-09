@@ -43,7 +43,8 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 		Func:       fn,
 	})
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	nodeWG := sync.WaitGroup{}
 	nodeWG.Add(1)
@@ -60,7 +61,6 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 
 	tree, err := greenstalk.NewBehaviorTree(
 		asyncFunctionAction,
-		greenstalk.WithContext(ctx),
 		greenstalk.WithVisitors(visitor),
 	)
 	if err != nil {
@@ -71,14 +71,12 @@ func testAsyncFunctionAction(t *testing.T, expectedStatus core.Status, fn func(c
 	evt := core.DefaultEvent{}
 
 	treeWG := sync.WaitGroup{}
-	treeWG.Add(1)
-	go func() {
-		err := tree.EventLoop(evt)
+	treeWG.Go(func() {
+		err := tree.EventLoop(ctx, evt)
 		if err != nil && expectedStatus != core.StatusError && err.Error() != errMsg {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		treeWG.Done()
-	}()
+	})
 
 	// first, wait for the function to finish
 	nodeWG.Wait()

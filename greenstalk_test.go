@@ -38,11 +38,10 @@ func TestUpdate(t *testing.T) {
 	internal.Logger.Info("Testing synchronous tree...")
 
 	// Synchronous, so does not need to be cancelled.
-	ctx := context.Background()
+	ctx := t.Context()
 
 	tree, err := NewBehaviorTree(
 		synchronousRoot,
-		WithContext(ctx),
 		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
@@ -51,7 +50,7 @@ func TestUpdate(t *testing.T) {
 
 	for {
 		evt := core.DefaultEvent{}
-		result := tree.Update(evt)
+		result := tree.Update(ctx, evt)
 		if result.Status() == core.StatusSuccess {
 			break
 		}
@@ -106,12 +105,11 @@ func getCount(d time.Duration) (uint, bool) {
 func TestEventLoop(t *testing.T) {
 	internal.Logger.Info("Testing asynchronous tree...")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	tree, err := NewBehaviorTree(
 		asynchronousRoot,
-		WithContext(ctx),
 		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
@@ -120,7 +118,7 @@ func TestEventLoop(t *testing.T) {
 
 	evt := core.DefaultEvent{}
 	go func() {
-		err := tree.EventLoop(evt)
+		err := tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
@@ -202,7 +200,7 @@ func makeErrorAsyncNode(wg *sync.WaitGroup) *errorAsyncNode {
 func TestAsyncErrorInTree(t *testing.T) {
 	internal.Logger.Info("Testing handling errors returned by async functions...")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	nodeWG := sync.WaitGroup{}
@@ -210,7 +208,6 @@ func TestAsyncErrorInTree(t *testing.T) {
 	errorFuncNode := makeErrorAsyncNode(&nodeWG)
 	tree, err := NewBehaviorTree(
 		errorFuncNode,
-		WithContext(ctx),
 		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
@@ -218,15 +215,13 @@ func TestAsyncErrorInTree(t *testing.T) {
 	}
 
 	treeWG := sync.WaitGroup{}
-	treeWG.Add(1)
-	evt := core.DefaultEvent{}
-	go func() {
-		err := tree.EventLoop(evt)
+	treeWG.Go(func() {
+		evt := core.DefaultEvent{}
+		err := tree.EventLoop(ctx, evt)
 		if err == nil || err.Error() != "Expected error during tests" {
 			t.Errorf("Tree should have returned an expected error")
 		}
-		treeWG.Done()
-	}()
+	})
 
 	nodeWG.Wait()
 	treeWG.Wait()

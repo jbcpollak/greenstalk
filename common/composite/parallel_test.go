@@ -57,11 +57,11 @@ func TestParallelExecution(t *testing.T) {
 	}
 	signaller := action.Signaller(params)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	tree, err := greenstalk.NewBehaviorTree(
 		Sequence(parallel, signaller),
-		greenstalk.WithContext(ctx),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -70,14 +70,12 @@ func TestParallelExecution(t *testing.T) {
 	evt := core.DefaultEvent{}
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	signal := <-sigChan
 	if !signal {
@@ -158,11 +156,11 @@ func TestParallelCompletionReset(t *testing.T) {
 	}
 	signaller := action.Signaller(params)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	tree, err := greenstalk.NewBehaviorTree(
 		Sequence(treeNode, signaller),
-		greenstalk.WithContext(ctx),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -171,14 +169,12 @@ func TestParallelCompletionReset(t *testing.T) {
 	evt := core.DefaultEvent{}
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	signal := <-sigChan
 	if !signal {
@@ -225,11 +221,11 @@ func TestNestedParallels(t *testing.T) {
 	}
 	signaller := action.Signaller(params)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	tree, err := greenstalk.NewBehaviorTree(
 		Sequence(treeNode, signaller),
-		greenstalk.WithContext(ctx),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -238,14 +234,12 @@ func TestNestedParallels(t *testing.T) {
 	evt := core.DefaultEvent{}
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	signal := <-sigChan
 	if !signal {

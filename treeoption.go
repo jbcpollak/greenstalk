@@ -1,8 +1,6 @@
 package greenstalk
 
 import (
-	"context"
-
 	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
@@ -18,11 +16,5 @@ type TreeOption func(*behaviorTree)
 func WithVisitors(v ...core.Visitor) TreeOption {
 	return func(p *behaviorTree) {
 		p.visitors = v
-	}
-}
-
-func WithContext(ctx context.Context) TreeOption {
-	return func(p *behaviorTree) {
-		p.ctx = ctx
 	}
 }

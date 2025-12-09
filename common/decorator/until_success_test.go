@@ -18,11 +18,14 @@ func TestUntilSuccess(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Synchronous, so does not need to be cancelled.
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	sigChan := make(chan bool)
+	defer close(sigChan)
 
 	countChan := make(chan uint)
+	defer close(countChan)
 
 	child := action.Counter(action.CounterParams{
 		BaseParams: "Counter",
@@ -49,7 +52,6 @@ func TestUntilSuccess(t *testing.T) {
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		greenstalk.WithContext(ctx),
 		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
@@ -57,23 +59,20 @@ func TestUntilSuccess(t *testing.T) {
 	}
 
 	evt := core.DefaultEvent{}
-	wg.Add(1)
-	go func() {
-		err := tree.EventLoop(evt)
+	wg.Go(func() {
+		err := tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
-	// Drain the countChan
 	go func() {
-		for {
-			<-countChan
+		for range countChan {
+			// drain it
 		}
 	}()
 
-	d := time.Duration(200) * time.Millisecond
+	d := 200 * time.Millisecond
 	signal, err := internal.WaitForSignalOrTimeout(sigChan, d)
 	if (err != nil) || !signal {
 		t.Errorf("Unexpectedly got %v", signal)

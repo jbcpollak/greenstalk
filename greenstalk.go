@@ -12,7 +12,6 @@ import (
 
 // BehaviorTree ...
 type behaviorTree struct {
-	ctx      context.Context
 	Root     core.Node
 	events   chan core.Event
 	visitors []core.Visitor
@@ -33,7 +32,6 @@ func NewBehaviorTree(
 	}
 
 	tree := &behaviorTree{
-		ctx:    context.TODO(),
 		Root:   root,
 		events: make(chan core.Event, 100 /* arbitrary */),
 	}
@@ -47,8 +45,8 @@ func NewBehaviorTree(
 }
 
 // Update propagates an update call down the behavior tree.
-func (bt *behaviorTree) Update(evt core.Event) core.ResultDetails {
-	result := core.Update(bt.ctx, bt.Root, evt)
+func (bt *behaviorTree) Update(ctx context.Context, evt core.Event) core.ResultDetails {
+	result := core.Update(ctx, bt.Root, evt)
 
 	status := result.Status()
 	if status == core.StatusError {
@@ -59,10 +57,10 @@ func (bt *behaviorTree) Update(evt core.Event) core.ResultDetails {
 	}
 
 	handleRunningResultDetails := func(running core.InitRunningResultDetails) {
-		err := running.RunningFn(bt.ctx, func(evt core.Event) error {
+		err := running.RunningFn(ctx, func(evt core.Event) error {
 			select {
-			case <-bt.ctx.Done():
-				return bt.ctx.Err()
+			case <-ctx.Done():
+				return ctx.Err()
 			case bt.events <- evt:
 				return nil
 			}
@@ -72,7 +70,7 @@ func (bt *behaviorTree) Update(evt core.Event) core.ResultDetails {
 			internal.Logger.Error("Error in running function", "err", err)
 
 			select {
-			case <-bt.ctx.Done():
+			case <-ctx.Done():
 				return
 			case bt.events <- core.ErrorEvent{Err: err}:
 				return
@@ -105,20 +103,22 @@ func (bt *behaviorTree) Update(evt core.Event) core.ResultDetails {
 	return result
 }
 
-func (bt *behaviorTree) EventLoop(evt core.Event) error {
+// EventLoop runs the behavior tree, starting with the provided initial event,
+// continuously until either the context is canceled or an error occurs.
+func (bt *behaviorTree) EventLoop(ctx context.Context, evt core.Event) error {
 	// Put the first event on the queue.
 	bt.events <- evt
 
 	for {
 		select {
-		case <-bt.ctx.Done():
+		case <-ctx.Done():
 			return nil
 		case evt := <-bt.events:
 			if errEvt, ok := evt.(core.ErrorEvent); ok {
 				return errEvt.Err
 			}
 			internal.Logger.Info("Updating with Event", "event", evt)
-			result := bt.Update(evt)
+			result := bt.Update(ctx, evt)
 			if result.Status() == core.StatusError {
 				if details, ok := result.(core.ErrorResultDetails); ok {
 					return details.Err
@@ -140,8 +140,6 @@ func (bt *behaviorTree) String() string {
 
 func (bt *behaviorTree) Enqueue(ctx context.Context, evt core.Event) error {
 	select {
-	case <-bt.ctx.Done():
-		return bt.ctx.Err()
 	case <-ctx.Done():
 		return ctx.Err()
 	case bt.events <- evt:

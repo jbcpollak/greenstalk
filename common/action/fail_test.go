@@ -26,7 +26,7 @@ func TestFail(t *testing.T) {
 	}
 
 	evt := core.DefaultEvent{}
-	result := tree.Update(evt)
+	result := tree.Update(t.Context(), evt)
 	if result.Status() != core.StatusFailure {
 		t.Errorf("Unexpectedly got %v", result)
 	}
