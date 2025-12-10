@@ -41,3 +41,5 @@ func (a *fail) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 func (a *fail) Leave(context.Context) error {
 	return nil
 }
+
+var _ core.Node = (*fail)(nil)

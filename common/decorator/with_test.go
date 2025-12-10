@@ -205,13 +205,15 @@ func TestWithInitError(t *testing.T) {
 		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
-		t.Errorf("Should net error here %v", err)
+		t.Errorf("Should not error here %v", err)
 	}
 
 	evt := core.DefaultEvent{}
 	wg.Go(func() {
 		err = tree.EventLoop(ctx, evt)
-		if err.Error() != "This is an error" {
+		if err == nil {
+			t.Error("Should have errored here")
+		} else if err.Error() != "This is an error" {
 			t.Errorf("Error does not have correct contents: %v", err)
 		}
 	})
