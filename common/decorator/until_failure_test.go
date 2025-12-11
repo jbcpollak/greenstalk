@@ -6,25 +6,28 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jbcpollak/greenstalk"
-	"github.com/jbcpollak/greenstalk/common/action"
-	"github.com/jbcpollak/greenstalk/common/composite"
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/common/action"
+	"github.com/jbcpollak/greenstalk/v2/common/composite"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 )
 
 func TestUntilFailure(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Synchronous, so does not need to be cancelled.
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	sigChan := make(chan bool)
+	defer close(sigChan)
 
 	countChan := make(chan uint)
+	defer close(countChan)
 
-	child := action.Counter[core.EmptyBlackboard](action.CounterParams{
+	child := action.Counter(action.CounterParams{
 		BaseParams: "Counter",
 		Limit:      3,
 		CountChan:  countChan,
@@ -34,15 +37,14 @@ func TestUntilFailure(t *testing.T) {
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		untilFailure,
-		action.Succeed[core.EmptyBlackboard](action.SucceedParams{
+		action.Succeed(action.SucceedParams{
 			BaseParams: "Success",
 		}),
 		signaller,
@@ -50,27 +52,23 @@ func TestUntilFailure(t *testing.T) {
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	go func() {
-		for {
-			<-countChan
+		for range countChan {
+			// drain it
 		}
 	}()
 
@@ -82,8 +80,7 @@ func TestUntilFailure(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusSuccess {
+	if status := testSequence.Result().Status(); status != core.StatusSuccess {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 }

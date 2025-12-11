@@ -4,31 +4,31 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-type TreeLogger[Blackboard any] interface {
-	LogTree(node core.Walkable[Blackboard])
+type TreeLogger interface {
+	LogTree(node core.Walkable)
 }
 
-func MakeDiffingTreeLogger[Blackboard any]() TreeLogger[Blackboard] {
+func MakeDiffingTreeLogger() TreeLogger {
 	differ := diffmatchpatch.New()
-	return &diffingTreeLogger[Blackboard]{
+	return &diffingTreeLogger{
 		differ: differ,
 	}
 }
 
-type diffingTreeLogger[Blackboard any] struct {
+type diffingTreeLogger struct {
 	differ   *diffmatchpatch.DiffMatchPatch
 	lastTree string
 }
 
-func (d *diffingTreeLogger[Blackboard]) LogTree(node core.Walkable[Blackboard]) {
+func (d *diffingTreeLogger) LogTree(node core.Walkable) {
 	treeStringBuilder := strings.Builder{}
 
-	printToBuilder := func(node core.Walkable[Blackboard], level int) {
+	printToBuilder := func(node core.Walkable, level int) {
 		indent := strings.Repeat("    ", level)
 
 		status := node.Result().Status()

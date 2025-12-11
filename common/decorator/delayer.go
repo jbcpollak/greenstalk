@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 type DelayerParams struct {
@@ -14,10 +14,10 @@ type DelayerParams struct {
 }
 
 // Delayer ...
-func Delayer[Blackboard any](params DelayerParams, child core.Node[Blackboard]) core.Node[Blackboard] {
+func Delayer(params DelayerParams, child core.Node) core.Node {
 	base := core.NewDecorator(params, child)
 
-	d := &delayer[Blackboard]{
+	d := &delayer{
 		Decorator: base,
 		delay:     params.Delay,
 	}
@@ -25,28 +25,30 @@ func Delayer[Blackboard any](params DelayerParams, child core.Node[Blackboard]) 
 }
 
 // delayer ...
-type delayer[Blackboard any] struct {
-	core.Decorator[Blackboard, DelayerParams]
+type delayer struct {
+	core.Decorator[DelayerParams]
 	delay time.Duration // delay in milliseconds
 	start time.Time
 }
 
 // Activate ...
-func (d *delayer[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (d *delayer) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	d.start = time.Now()
 
-	return d.Tick(ctx, bb, evt)
+	return d.Tick(ctx, evt)
 }
 
 // Tick ...
-func (d *delayer[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (d *delayer) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	if time.Since(d.start) > d.delay {
-		return core.Update(ctx, d.Child, bb, evt)
+		return core.Update(ctx, d.Child, evt)
 	}
 	return core.RunningResult()
 }
 
 // Leave ...
-func (d *delayer[Blackboard]) Leave(bb Blackboard) error {
+func (d *delayer) Leave(context.Context) error {
 	return nil
 }
+
+var _ core.Node = (*delayer)(nil)

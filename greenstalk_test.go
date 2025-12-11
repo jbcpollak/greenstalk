@@ -7,22 +7,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 
 	// Use dot imports to make a tree definition look nice.
 	// Be careful when doing this! These packages export
 	// common word identifiers such as "Fail" and "Sequence".
-	. "github.com/jbcpollak/greenstalk/common/action"
-	. "github.com/jbcpollak/greenstalk/common/composite"
-	. "github.com/jbcpollak/greenstalk/common/decorator"
+	. "github.com/jbcpollak/greenstalk/v2/common/action"
+	. "github.com/jbcpollak/greenstalk/v2/common/composite"
+	. "github.com/jbcpollak/greenstalk/v2/common/decorator"
 )
-
-type TestBlackboard struct {
-	id    int
-	count uint
-}
 
 var n = 0
 
@@ -35,21 +30,19 @@ var synchronousRoot = Sequence(
 	RepeatUntil(RepeatUntilParams{
 		BaseParams: "RepeatUntilTwo",
 		Until:      untilTwo,
-	}, Fail[TestBlackboard](FailParams{})),
-	Succeed[TestBlackboard](SucceedParams{}),
+	}, Fail(FailParams{})),
+	Succeed(SucceedParams{}),
 )
 
 func TestUpdate(t *testing.T) {
 	internal.Logger.Info("Testing synchronous tree...")
 
 	// Synchronous, so does not need to be cancelled.
-	ctx := context.Background()
+	ctx := t.Context()
 
 	tree, err := NewBehaviorTree(
 		synchronousRoot,
-		TestBlackboard{id: 42},
-		WithContext[TestBlackboard](ctx),
-		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
+		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -57,7 +50,7 @@ func TestUpdate(t *testing.T) {
 
 	for {
 		evt := core.DefaultEvent{}
-		result := tree.Update(evt)
+		result := tree.Update(ctx, evt)
 		if result.Status() == core.StatusSuccess {
 			break
 		}
@@ -69,31 +62,33 @@ func TestUpdate(t *testing.T) {
 
 var countChan = make(chan uint)
 
-var delay = 100
-var asynchronousRoot = Sequence(
-	// Repeater(core.Params{"n": 2}, Fail[TestBlackboard](nil, nil)),
-	AsyncDelayer(
-		AsyncDelayerParams{
-			BaseParams: core.BaseParams("First"),
-			Delay:      time.Duration(delay) * time.Millisecond,
-		},
-		Counter[TestBlackboard](CounterParams{
-			BaseParams: "First Counter",
-			Limit:      10,
-			CountChan:  countChan,
-		}),
-	),
-	AsyncDelayer(
-		AsyncDelayerParams{
-			BaseParams: core.BaseParams("Second"),
-			Delay:      time.Duration(delay) * time.Millisecond,
-		},
-		Counter[TestBlackboard](CounterParams{
-			BaseParams: "Second Counter",
-			Limit:      10,
-			CountChan:  countChan,
-		}),
-	),
+var (
+	delay            = 100
+	asynchronousRoot = Sequence(
+		// Repeater(core.Params{"n": 2}, Fail(nil, nil)),
+		AsyncDelayer(
+			AsyncDelayerParams{
+				BaseParams: core.BaseParams("First"),
+				Delay:      time.Duration(delay) * time.Millisecond,
+			},
+			Counter(CounterParams{
+				BaseParams: "First Counter",
+				Limit:      10,
+				CountChan:  countChan,
+			}),
+		),
+		AsyncDelayer(
+			AsyncDelayerParams{
+				BaseParams: core.BaseParams("Second"),
+				Delay:      time.Duration(delay) * time.Millisecond,
+			},
+			Counter(CounterParams{
+				BaseParams: "Second Counter",
+				Limit:      10,
+				CountChan:  countChan,
+			}),
+		),
+	)
 )
 
 func getCount(d time.Duration) (uint, bool) {
@@ -110,14 +105,12 @@ func getCount(d time.Duration) (uint, bool) {
 func TestEventLoop(t *testing.T) {
 	internal.Logger.Info("Testing asynchronous tree...")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
-	bb := TestBlackboard{id: 42, count: 0}
 	tree, err := NewBehaviorTree(
-		asynchronousRoot, bb,
-		WithContext[TestBlackboard](ctx),
-		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
+		asynchronousRoot,
+		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -125,7 +118,7 @@ func TestEventLoop(t *testing.T) {
 
 	evt := core.DefaultEvent{}
 	go func() {
-		err := tree.EventLoop(evt)
+		err := tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
@@ -172,11 +165,11 @@ func TestEventLoop(t *testing.T) {
 }
 
 type errorAsyncNode struct {
-	core.Leaf[TestBlackboard, core.BaseParams]
+	core.Leaf[core.BaseParams]
 	wg *sync.WaitGroup
 }
 
-func (a *errorAsyncNode) Activate(ctx context.Context, bb TestBlackboard, evt core.Event) core.ResultDetails {
+func (a *errorAsyncNode) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	errorFunc := func(ctx context.Context, enqueue core.EnqueueFn) error {
 		a.wg.Done()
 		return fmt.Errorf("Expected error during tests")
@@ -184,16 +177,18 @@ func (a *errorAsyncNode) Activate(ctx context.Context, bb TestBlackboard, evt co
 	return core.InitRunningResult(errorFunc)
 }
 
-func (a *errorAsyncNode) Tick(ctx context.Context, bb TestBlackboard, evt core.Event) core.ResultDetails {
+func (a *errorAsyncNode) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	panic("Should never get ticked during tests")
 }
 
-func (a *errorAsyncNode) Leave(bb TestBlackboard) error {
+func (a *errorAsyncNode) Leave(context.Context) error {
 	panic("Should never leave during tests")
 }
 
+var _ core.Node = (*errorAsyncNode)(nil)
+
 func makeErrorAsyncNode(wg *sync.WaitGroup) *errorAsyncNode {
-	base := core.NewLeaf[TestBlackboard](
+	base := core.NewLeaf(
 		core.BaseParams("ErrorAsyncNode"),
 	)
 	return &errorAsyncNode{
@@ -205,33 +200,28 @@ func makeErrorAsyncNode(wg *sync.WaitGroup) *errorAsyncNode {
 func TestAsyncErrorInTree(t *testing.T) {
 	internal.Logger.Info("Testing handling errors returned by async functions...")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
-
-	bb := TestBlackboard{id: 42, count: 0}
 
 	nodeWG := sync.WaitGroup{}
 	nodeWG.Add(1)
 	errorFuncNode := makeErrorAsyncNode(&nodeWG)
 	tree, err := NewBehaviorTree(
-		errorFuncNode, bb,
-		WithContext[TestBlackboard](ctx),
-		WithVisitors(util.PrintTreeInColor[TestBlackboard]),
+		errorFuncNode,
+		WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	treeWG := sync.WaitGroup{}
-	treeWG.Add(1)
-	evt := core.DefaultEvent{}
-	go func() {
-		err := tree.EventLoop(evt)
+	treeWG.Go(func() {
+		evt := core.DefaultEvent{}
+		err := tree.EventLoop(ctx, evt)
 		if err == nil || err.Error() != "Expected error during tests" {
 			t.Errorf("Tree should have returned an expected error")
 		}
-		treeWG.Done()
-	}()
+	})
 
 	nodeWG.Wait()
 	treeWG.Wait()

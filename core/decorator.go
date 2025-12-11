@@ -10,31 +10,31 @@ import (
 // map used for setting variables for a specific decorator node, for instance
 // Params{"n": 5} for a Repeater node or Params{"ms": 500} for a
 // Delayer node.
-type Decorator[Blackboard any, P Params] struct {
+type Decorator[P Params] struct {
 	BaseNode[P]
-	Child Node[Blackboard]
+	Child Node
 }
 
 // NewDecorator creates a new decorator base node.
-func NewDecorator[Blackboard any, P Params](params P, child Node[Blackboard]) Decorator[Blackboard, P] {
+func NewDecorator[P Params](params P, child Node) Decorator[P] {
 	child.SetNamePrefix(params.Name())
-	return Decorator[Blackboard, P]{
+	return Decorator[P]{
 		BaseNode: newBaseNode(CategoryDecorator, params),
 		Child:    child,
 	}
 }
 
-func (c *Decorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) {
+func (c *Decorator[P]) Walk(walkFn WalkFunc, level int) {
 	walkFn(c, level)
 	c.Child.Walk(walkFn, level+1)
 }
 
 // String returns a string representation of the decorator node.
-func (d *Decorator[Blackboard, P]) String() string {
+func (d *Decorator[P]) String() string {
 	return fmt.Sprintf("* %s (%v)", d.Params.Name(), d.Params)
 }
 
-func (d *Decorator[Blackboard, P]) SetNamePrefix(namePrefix string) {
+func (d *Decorator[P]) SetNamePrefix(namePrefix string) {
 	d.BaseNode.SetNamePrefix(namePrefix)
 	d.Child.SetNamePrefix(d.FullName())
 }

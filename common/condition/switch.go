@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 type SwitchFunc func() int
@@ -12,20 +12,21 @@ type SwitchFunc func() int
 // Switch activates the child at the index returned by the switch function.
 // Note that an If node is a rudimentary form of a Switch node with two children
 // and the function returning 0 / 1 for true / false.
-func SwitchNamed[Blackboard any](name string, switchFunc SwitchFunc, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func SwitchNamed(name string, switchFunc SwitchFunc, children ...core.Node) core.Node {
 	base := core.NewComposite(core.BaseParams(name), children)
-	return &switchNode[Blackboard]{Composite: base, switchFunc: switchFunc}
+	return &switchNode{Composite: base, switchFunc: switchFunc}
 }
-func Switch[Blackboard any](switchFunc SwitchFunc, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+
+func Switch(switchFunc SwitchFunc, children ...core.Node) core.Node {
 	return SwitchNamed("Switch", switchFunc, children...)
 }
 
-type switchNode[Blackboard any] struct {
-	core.Composite[Blackboard, core.BaseParams]
+type switchNode struct {
+	core.Composite[core.BaseParams]
 	switchFunc SwitchFunc
 }
 
-func (i *switchNode[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (i *switchNode) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	switchIx := i.switchFunc()
 	if switchIx < 0 || switchIx >= len(i.Children) {
 		return core.ErrorResult(fmt.Errorf("Switch index out of bounds: %d", switchIx))
@@ -33,14 +34,16 @@ func (i *switchNode[Blackboard]) Activate(ctx context.Context, bb Blackboard, ev
 
 	i.CurrentChild = switchIx
 
-	return i.Tick(ctx, bb, evt)
+	return i.Tick(ctx, evt)
 }
 
-func (s *switchNode[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *switchNode) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	child := s.Children[s.CurrentChild]
-	return core.Update(ctx, child, bb, evt)
+	return core.Update(ctx, child, evt)
 }
 
-func (s *switchNode[Blackboard]) Leave(bb Blackboard) error {
+func (s *switchNode) Leave(context.Context) error {
 	return nil
 }
+
+var _ core.Node = (*switchNode)(nil)

@@ -4,32 +4,33 @@ import (
 	"context"
 	"math/rand"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // RandomSequence works just like Sequence, except it shuffles
 // the order of its children every time it is re-updated.
-func RandomSequenceNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func RandomSequenceNamed(name string, children ...core.Node) core.Node {
 	base := core.NewComposite(core.BaseParams(name), children)
-	return &randomSequence[Blackboard]{Composite: base}
+	return &randomSequence{Composite: base}
 }
-func RandomSequence[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+
+func RandomSequence(children ...core.Node) core.Node {
 	return RandomSequenceNamed("RandomSequence", children...)
 }
 
-type randomSequence[Blackboard any] struct {
-	core.Composite[Blackboard, core.BaseParams]
+type randomSequence struct {
+	core.Composite[core.BaseParams]
 }
 
-func (s *randomSequence[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *randomSequence) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	shuffle(s.Children)
 
-	return s.Tick(ctx, bb, evt)
+	return s.Tick(ctx, evt)
 }
 
-func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *randomSequence) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	for s.CurrentChild < len(s.Children) {
-		result := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
+		result := core.Update(ctx, s.Children[s.CurrentChild], evt)
 		if result.Status() != core.StatusSuccess {
 			return result
 		}
@@ -38,13 +39,15 @@ func (s *randomSequence[Blackboard]) Tick(ctx context.Context, bb Blackboard, ev
 	return core.SuccessResult()
 }
 
-func (s *randomSequence[Blackboard]) Leave(bb Blackboard) error {
+func (s *randomSequence) Leave(context.Context) error {
 	s.CurrentChild = 0
 	return nil
 }
 
-func shuffle[Blackboard any](nodes []core.Node[Blackboard]) {
+func shuffle(nodes []core.Node) {
 	rand.Shuffle(len(nodes), func(i, j int) {
 		nodes[i], nodes[j] = nodes[j], nodes[i]
 	})
 }
+
+var _ core.Node = (*randomSequence)(nil)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 type SucceedParams struct {
@@ -16,29 +16,31 @@ func (p SucceedParams) Name() string {
 }
 
 // Succeed returns a new succeed node, which always succeeds in one tick.
-func Succeed[Blackboard any](params SucceedParams) core.Node[Blackboard] {
-	base := core.NewLeaf[Blackboard](params)
-	return &succeed[Blackboard]{Leaf: base}
+func Succeed(params SucceedParams) core.Node {
+	base := core.NewLeaf(params)
+	return &succeed{Leaf: base}
 }
 
 // succeed ...
-type succeed[Blackboard any] struct {
-	core.Leaf[Blackboard, SucceedParams]
+type succeed struct {
+	core.Leaf[SucceedParams]
 }
 
 // Activate ...
-func (a *succeed[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (a *succeed) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	return core.SuccessResult()
 }
 
 // Tick ...
-func (a *succeed[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (a *succeed) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	return core.ErrorResult(
 		fmt.Errorf("Succeed node should not be ticked"),
 	)
 }
 
 // Leave ...
-func (a *succeed[Blackboard]) Leave(bb Blackboard) error {
+func (a *succeed) Leave(context.Context) error {
 	return nil
 }
+
+var _ core.Node = (*succeed)(nil)

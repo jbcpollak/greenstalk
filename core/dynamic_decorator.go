@@ -2,31 +2,31 @@ package core
 
 import "fmt"
 
-type DynamicDecorator[Blackboard any, P Params] struct {
+type DynamicDecorator[P Params] struct {
 	BaseNode[P]
-	Child   Node[Blackboard]
-	ChildFn func() (Node[Blackboard], error)
+	Child   Node
+	ChildFn func() (Node, error)
 }
 
-func NewDynamicDecorator[Blackboard any, P Params](params P, childFn func() (Node[Blackboard], error)) DynamicDecorator[Blackboard, P] {
-	return DynamicDecorator[Blackboard, P]{
+func NewDynamicDecorator[P Params](params P, childFn func() (Node, error)) DynamicDecorator[P] {
+	return DynamicDecorator[P]{
 		BaseNode: newBaseNode(CategoryDecorator, params),
 		ChildFn:  childFn,
 	}
 }
 
-func (c *DynamicDecorator[Blackboard, P]) Walk(walkFn WalkFunc[Blackboard], level int) {
+func (c *DynamicDecorator[P]) Walk(walkFn WalkFunc, level int) {
 	walkFn(c, level)
 	if c.Child != nil {
 		c.Child.Walk(walkFn, level+1)
 	}
 }
 
-func (d *DynamicDecorator[Blackboard, P]) String() string {
+func (d *DynamicDecorator[P]) String() string {
 	return fmt.Sprintf("*d %s (%v)", d.Params.Name(), d.Params)
 }
 
-func (d *DynamicDecorator[Blackboard, P]) SetNamePrefix(namePrefix string) {
+func (d *DynamicDecorator[P]) SetNamePrefix(namePrefix string) {
 	d.BaseNode.SetNamePrefix(namePrefix)
 	if d.Child != nil {
 		d.Child.SetNamePrefix(d.FullName())

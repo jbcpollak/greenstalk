@@ -41,18 +41,23 @@ func (d simpleResultDetails) Status() Status { return d.status }
 func SuccessResult() ResultDetails {
 	return simpleResultDetails{status: StatusSuccess}
 }
+
 func FailureResult() ResultDetails {
 	return simpleResultDetails{status: StatusFailure}
 }
+
 func InvalidResult() ResultDetails {
 	return simpleResultDetails{status: StatusInvalid}
 }
+
 func RunningResult() ResultDetails {
 	return simpleResultDetails{status: StatusRunning}
 }
 
-type EnqueueFn func(Event) error
-type RunningFn func(ctx context.Context, enqueue EnqueueFn) error
+type (
+	EnqueueFn func(Event) error
+	RunningFn func(ctx context.Context, enqueue EnqueueFn) error
+)
 
 func InitRunningResult(fn RunningFn) InitRunningResultDetails {
 	return InitRunningResultDetails{fn}
@@ -92,8 +97,6 @@ func (b BaseParams) Name() string {
 }
 
 type EmptyReturns struct{}
-
-type EmptyBlackboard struct{}
 
 type (
 	// Params denotes a list of parameters to a node.

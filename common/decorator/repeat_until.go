@@ -3,43 +3,44 @@ package decorator
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
 )
 
-type UntilCondition func(status core.ResultDetails) bool
-type RepeatUntilParams struct {
-	core.BaseParams
+type (
+	UntilCondition    func(status core.ResultDetails) bool
+	RepeatUntilParams struct {
+		core.BaseParams
 
-	Until UntilCondition
-}
+		Until UntilCondition
+	}
+)
 
 // RepeatUntil updates its child n times, at which point the repeater
 // returns Success. The repeater runs forever if n == 0.
-func RepeatUntil[Blackboard any](params RepeatUntilParams, child core.Node[Blackboard]) core.Node[Blackboard] {
+func RepeatUntil(params RepeatUntilParams, child core.Node) core.Node {
 	base := core.NewDecorator(params, child)
-	return &repeatUntil[Blackboard]{
+	return &repeatUntil{
 		Decorator: base,
 	}
 }
 
-type repeatUntil[Blackboard any] struct {
-	core.Decorator[Blackboard, RepeatUntilParams]
+type repeatUntil struct {
+	core.Decorator[RepeatUntilParams]
 }
 
-func (d *repeatUntil[Blackboard]) repeat(_ context.Context, enqueue core.EnqueueFn) error {
+func (d *repeatUntil) repeat(_ context.Context, enqueue core.EnqueueFn) error {
 	internal.Logger.Info("Repeating", "name", d.Name())
 	return enqueue(core.TargetNodeEvent(d.Id()))
 }
 
-func (d *repeatUntil[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-
-	return d.Tick(ctx, bb, evt)
+func (d *repeatUntil) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
+	return d.Tick(ctx, evt)
 }
 
-func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (d *repeatUntil) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	internal.Logger.Info("Repeater: Calling child")
-	result := core.Update(ctx, d.Child, bb, evt)
+	result := core.Update(ctx, d.Child, evt)
 	status := result.Status()
 
 	if status == core.StatusError ||
@@ -55,6 +56,8 @@ func (d *repeatUntil[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt c
 	return core.InitRunningResult(d.repeat)
 }
 
-func (d *repeatUntil[Blackboard]) Leave(bb Blackboard) error {
+func (d *repeatUntil) Leave(context.Context) error {
 	return nil
 }
+
+var _ core.Node = (*repeatUntil)(nil)

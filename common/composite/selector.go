@@ -3,34 +3,35 @@ package composite
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // Selector updates each child in order, returning success as soon as
 // a child succeeds. If a child returns Running, the selector node
 // will resume execution from that child the next tick.
-func SelectorNamed[Blackboard any](name string, children ...core.Node[Blackboard]) core.Node[Blackboard] {
+func SelectorNamed(name string, children ...core.Node) core.Node {
 	base := core.NewComposite(core.BaseParams(name), children)
-	return &selector[Blackboard]{Composite: base}
+	return &selector{Composite: base}
 }
-func Selector[Blackboard any](children ...core.Node[Blackboard]) core.Node[Blackboard] {
+
+func Selector(children ...core.Node) core.Node {
 	return SelectorNamed("Selector", children...)
 }
 
-type selector[Blackboard any] struct {
-	core.Composite[Blackboard, core.BaseParams]
+type selector struct {
+	core.Composite[core.BaseParams]
 }
 
-func (s *selector[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *selector) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	s.CurrentChild = 0
 
 	// Tick as expected
-	return s.Tick(ctx, bb, evt)
+	return s.Tick(ctx, evt)
 }
 
-func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (s *selector) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
 	for s.CurrentChild < len(s.Children) {
-		result := core.Update(ctx, s.Children[s.CurrentChild], bb, evt)
+		result := core.Update(ctx, s.Children[s.CurrentChild], evt)
 		if result.Status() != core.StatusFailure {
 			return result
 		}
@@ -39,6 +40,8 @@ func (s *selector[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core
 	return core.FailureResult()
 }
 
-func (s *selector[Blackboard]) Leave(bb Blackboard) error {
+func (s *selector) Leave(context.Context) error {
 	return nil
 }
+
+var _ core.Node = (*selector)(nil)

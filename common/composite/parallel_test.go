@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jbcpollak/greenstalk"
-	"github.com/jbcpollak/greenstalk/common/action"
-	"github.com/jbcpollak/greenstalk/common/decorator"
-	"github.com/jbcpollak/greenstalk/common/state"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/common/action"
+	"github.com/jbcpollak/greenstalk/v2/common/decorator"
+	"github.com/jbcpollak/greenstalk/v2/common/state"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 type actionMessage struct {
@@ -27,7 +27,7 @@ func TestParallelExecution(t *testing.T) {
 	const start = "start"
 	const end = "end"
 
-	action1 := action.AsyncFunctionAction[core.EmptyBlackboard](action.AsyncFunctionActionParams{
+	action1 := action.AsyncFunctionAction(action.AsyncFunctionActionParams{
 		BaseParams: "Action1",
 		Func: func(ctx context.Context) core.ResultDetails {
 			messageChan <- actionMessage{action1Name, start}
@@ -37,7 +37,7 @@ func TestParallelExecution(t *testing.T) {
 		},
 	})
 
-	action2 := action.AsyncFunctionAction[core.EmptyBlackboard](action.AsyncFunctionActionParams{
+	action2 := action.AsyncFunctionAction(action.AsyncFunctionActionParams{
 		BaseParams: "Action2",
 		Func: func(ctx context.Context) core.ResultDetails {
 			messageChan <- actionMessage{action2Name, start}
@@ -52,18 +52,16 @@ func TestParallelExecution(t *testing.T) {
 	sigChan := make(chan bool)
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	tree, err := greenstalk.NewBehaviorTree(
 		Sequence(parallel, signaller),
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -72,14 +70,12 @@ func TestParallelExecution(t *testing.T) {
 	evt := core.DefaultEvent{}
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	signal := <-sigChan
 	if !signal {
@@ -133,13 +129,14 @@ func TestParallelCompletionReset(t *testing.T) {
 
 			count := counterParam.Get()
 			return count > 1
-		}},
+		},
+	},
 		Sequence(
 			Parallel(2, 1,
-				action.Succeed[core.EmptyBlackboard](action.SucceedParams{BaseParams: "success1"}),
-				action.Succeed[core.EmptyBlackboard](action.SucceedParams{BaseParams: "success2"}),
+				action.Succeed(action.SucceedParams{BaseParams: "success1"}),
+				action.Succeed(action.SucceedParams{BaseParams: "success2"}),
 			),
-			action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+			action.FunctionAction(action.FunctionActionParams{
 				BaseParams: "increment",
 				Func: func() core.ResultDetails {
 					count := counterParam.Get()
@@ -154,18 +151,16 @@ func TestParallelCompletionReset(t *testing.T) {
 	sigChan := make(chan bool)
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	tree, err := greenstalk.NewBehaviorTree(
 		Sequence(treeNode, signaller),
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -174,14 +169,12 @@ func TestParallelCompletionReset(t *testing.T) {
 	evt := core.DefaultEvent{}
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	signal := <-sigChan
 	if !signal {
@@ -194,7 +187,6 @@ func TestParallelCompletionReset(t *testing.T) {
 
 	// before the fix, the behavior tree would be stuck in running, and RepeatUntil verifies that the parallel node return success
 	// so if the behavior tree exits cleanly, the test is comprehensive enough
-
 }
 
 func TestNestedParallels(t *testing.T) {
@@ -204,8 +196,8 @@ func TestNestedParallels(t *testing.T) {
 
 	synchronizedCounter := state.SynchronizedStateProvider[int]{}
 
-	makeAsyncIncrement := func() core.Node[core.EmptyBlackboard] {
-		return action.AsyncFunctionAction[core.EmptyBlackboard](action.AsyncFunctionActionParams{
+	makeAsyncIncrement := func() core.Node {
+		return action.AsyncFunctionAction(action.AsyncFunctionActionParams{
 			BaseParams: "increment",
 			Func: func(ctx context.Context) core.ResultDetails {
 				synchronizedCounter.Lock()
@@ -224,18 +216,16 @@ func TestNestedParallels(t *testing.T) {
 	sigChan := make(chan bool)
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	tree, err := greenstalk.NewBehaviorTree(
 		Sequence(treeNode, signaller),
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -244,14 +234,12 @@ func TestNestedParallels(t *testing.T) {
 	evt := core.DefaultEvent{}
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	signal := <-sigChan
 	if !signal {

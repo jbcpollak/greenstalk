@@ -3,35 +3,32 @@ package action
 import (
 	"testing"
 
-	"github.com/jbcpollak/greenstalk"
-
-	"github.com/jbcpollak/greenstalk/common/composite"
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/common/composite"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 )
 
 func TestFail(t *testing.T) {
-	fail := Fail[core.EmptyBlackboard](FailParams{})
+	fail := Fail(FailParams{})
 
-	var failSequence = composite.Sequence(
+	failSequence := composite.Sequence(
 		fail,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		failSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	result := tree.Update(evt)
+	result := tree.Update(t.Context(), evt)
 	if result.Status() != core.StatusFailure {
 		t.Errorf("Unexpectedly got %v", result)
-
 	}
 
 	internal.Logger.Info("Done!")

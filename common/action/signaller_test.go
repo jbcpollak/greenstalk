@@ -4,12 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jbcpollak/greenstalk"
-
-	"github.com/jbcpollak/greenstalk/common/composite"
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/common/composite"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 )
 
 func TestSignaller(t *testing.T) {
@@ -17,27 +16,25 @@ func TestSignaller(t *testing.T) {
 
 	params := SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := Signaller[core.EmptyBlackboard](params)
+	signaller := Signaller(params)
 
-	var signalSequence = composite.Sequence(
+	signalSequence := composite.Sequence(
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		signalSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	result := tree.Update(evt)
+	result := tree.Update(t.Context(), evt)
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -61,20 +58,18 @@ func TestAsyncSignaller(t *testing.T) {
 
 	params := SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := Signaller[core.EmptyBlackboard](params)
+	signaller := Signaller(params)
 
-	var signalSequence = composite.Sequence(
+	signalSequence := composite.Sequence(
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		signalSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
@@ -82,7 +77,7 @@ func TestAsyncSignaller(t *testing.T) {
 
 	evt := core.DefaultEvent{}
 	go func() {
-		err := tree.EventLoop(evt)
+		err := tree.EventLoop(t.Context(), evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}

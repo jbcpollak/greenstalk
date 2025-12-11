@@ -1,9 +1,7 @@
 package greenstalk
 
 import (
-	"context"
-
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // TreeOption is used to set options when initializing a BehaviorTree.
@@ -12,17 +10,11 @@ import (
 // Example usage:
 //
 //	p := NewBehaviorTree(root, WithInput(someInput), WithOutput(someOutput))
-type TreeOption[Blackboard any] func(*behaviorTree[Blackboard])
+type TreeOption func(*Tree)
 
 // WithVisitor lets you specify a visitor which is called after every tick and visits every node.
-func WithVisitors[Blackboard any](v ...core.Visitor[Blackboard]) TreeOption[Blackboard] {
-	return func(p *behaviorTree[Blackboard]) {
+func WithVisitors(v ...core.Visitor) TreeOption {
+	return func(p *Tree) {
 		p.visitors = v
-	}
-}
-
-func WithContext[Blackboard any](ctx context.Context) TreeOption[Blackboard] {
-	return func(p *behaviorTree[Blackboard]) {
-		p.ctx = ctx
 	}
 }

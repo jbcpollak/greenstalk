@@ -1,13 +1,13 @@
 package state
 
 import (
-	"github.com/jbcpollak/greenstalk/common/action"
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/common/action"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
 // This node resets all provided states and returns SuccessStatus
-func MakeStateResetAction[Blackboard any](states ...StateResetter) core.Node[Blackboard] {
-	return action.FunctionAction[Blackboard](action.FunctionActionParams{
+func MakeStateResetAction(states ...StateResetter) core.Node {
+	return action.FunctionAction(action.FunctionActionParams{
 		BaseParams: "stateReset",
 		Func: func() core.ResultDetails {
 			for _, state := range states {

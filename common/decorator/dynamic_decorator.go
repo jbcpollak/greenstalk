@@ -3,22 +3,23 @@ package decorator
 import (
 	"context"
 
-	"github.com/jbcpollak/greenstalk/core"
+	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
-func DynamicDecoratorNamed[Blackboard any](name string, childFn func() (core.Node[Blackboard], error)) core.Node[Blackboard] {
+func DynamicDecoratorNamed(name string, childFn func() (core.Node, error)) core.Node {
 	base := core.NewDynamicDecorator(core.BaseParams(name), childFn)
-	return &dynamicDecorator[Blackboard]{DynamicDecorator: base}
+	return &dynamicDecorator{DynamicDecorator: base}
 }
-func DynamicDecorator[Blackboard any](childFn func() (core.Node[Blackboard], error)) core.Node[Blackboard] {
+
+func DynamicDecorator(childFn func() (core.Node, error)) core.Node {
 	return DynamicDecoratorNamed("DynamicDecorator", childFn)
 }
 
-type dynamicDecorator[Blackboard any] struct {
-	core.DynamicDecorator[Blackboard, core.BaseParams]
+type dynamicDecorator struct {
+	core.DynamicDecorator[core.BaseParams]
 }
 
-func (d *dynamicDecorator[Blackboard]) Activate(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
+func (d *dynamicDecorator) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	child, err := d.ChildFn()
 	if err != nil {
 		return core.ErrorResult(err)
@@ -26,13 +27,15 @@ func (d *dynamicDecorator[Blackboard]) Activate(ctx context.Context, bb Blackboa
 	child.SetNamePrefix(d.FullName())
 	d.Child = child
 
-	return d.Tick(ctx, bb, evt)
+	return d.Tick(ctx, evt)
 }
 
-func (d *dynamicDecorator[Blackboard]) Tick(ctx context.Context, bb Blackboard, evt core.Event) core.ResultDetails {
-	return core.Update(ctx, d.Child, bb, evt)
+func (d *dynamicDecorator) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
+	return core.Update(ctx, d.Child, evt)
 }
 
-func (d *dynamicDecorator[Blackboard]) Leave(bb Blackboard) error {
+func (d *dynamicDecorator) Leave(context.Context) error {
 	return nil
 }
+
+var _ core.Node = (*dynamicDecorator)(nil)

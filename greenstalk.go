@@ -5,26 +5,24 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 )
 
-// BehaviorTree ...
-type behaviorTree[Blackboard any] struct {
-	ctx        context.Context
-	Root       core.Node[Blackboard]
-	Blackboard Blackboard
-	events     chan core.Event
-	visitors   []core.Visitor[Blackboard]
+// Tree represents a behavior tree.
+//
+// It must be initialized by calling [NewBehaviorTree].
+type Tree struct {
+	root     core.Node
+	events   chan core.Event
+	visitors []core.Visitor
 }
 
-func NewBehaviorTree[Blackboard any](
-	root core.Node[Blackboard],
-	bb Blackboard,
-	opts ...TreeOption[Blackboard],
-) (*behaviorTree[Blackboard], error) {
-
+func NewBehaviorTree(
+	root core.Node,
+	opts ...TreeOption,
+) (*Tree, error) {
 	var eb internal.ErrorBuilder
 	eb.SetMessage("NewBehaviorTree")
 	if root == nil {
@@ -35,11 +33,9 @@ func NewBehaviorTree[Blackboard any](
 		return nil, eb.Error()
 	}
 
-	tree := &behaviorTree[Blackboard]{
-		ctx:        context.TODO(),
-		Root:       root,
-		Blackboard: bb,
-		events:     make(chan core.Event, 100 /* arbitrary */),
+	tree := &Tree{
+		root:   root,
+		events: make(chan core.Event, 100 /* arbitrary */),
 	}
 
 	// Apply all options to the tree.
@@ -51,8 +47,8 @@ func NewBehaviorTree[Blackboard any](
 }
 
 // Update propagates an update call down the behavior tree.
-func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
-	result := core.Update(bt.ctx, bt.Root, bt.Blackboard, evt)
+func (bt *Tree) Update(ctx context.Context, evt core.Event) core.ResultDetails {
+	result := core.Update(ctx, bt.root, evt)
 
 	status := result.Status()
 	if status == core.StatusError {
@@ -63,10 +59,10 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 	}
 
 	handleRunningResultDetails := func(running core.InitRunningResultDetails) {
-		err := running.RunningFn(bt.ctx, func(evt core.Event) error {
+		err := running.RunningFn(ctx, func(evt core.Event) error {
 			select {
-			case <-bt.ctx.Done():
-				return bt.ctx.Err()
+			case <-ctx.Done():
+				return ctx.Err()
 			case bt.events <- evt:
 				return nil
 			}
@@ -76,7 +72,7 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 			internal.Logger.Error("Error in running function", "err", err)
 
 			select {
-			case <-bt.ctx.Done():
+			case <-ctx.Done():
 				return
 			case bt.events <- core.ErrorEvent{Err: err}:
 				return
@@ -103,26 +99,28 @@ func (bt *behaviorTree[Blackboard]) Update(evt core.Event) core.ResultDetails {
 	}
 
 	for _, visitor := range bt.visitors {
-		visitor(bt.Root)
+		visitor(bt.root)
 	}
 
 	return result
 }
 
-func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
+// EventLoop runs the behavior tree, starting with the provided initial event,
+// continuously until either the context is canceled or an error occurs.
+func (bt *Tree) EventLoop(ctx context.Context, evt core.Event) error {
 	// Put the first event on the queue.
 	bt.events <- evt
 
 	for {
 		select {
-		case <-bt.ctx.Done():
+		case <-ctx.Done():
 			return nil
 		case evt := <-bt.events:
 			if errEvt, ok := evt.(core.ErrorEvent); ok {
 				return errEvt.Err
 			}
 			internal.Logger.Info("Updating with Event", "event", evt)
-			result := bt.Update(evt)
+			result := bt.Update(ctx, evt)
 			if result.Status() == core.StatusError {
 				if details, ok := result.(core.ErrorResultDetails); ok {
 					return details.Err
@@ -138,14 +136,12 @@ func (bt *behaviorTree[Blackboard]) EventLoop(evt core.Event) error {
 
 // String creates a string representation of the behavior tree
 // by traversing it and writing lexical elements to a string
-func (bt *behaviorTree[Blackboard]) String() string {
-	return util.NodeToString(bt.Root)
+func (bt *Tree) String() string {
+	return util.NodeToString(bt.root)
 }
 
-func (bt *behaviorTree[Blackboard]) Enqueue(ctx context.Context, evt core.Event) error {
+func (bt *Tree) Enqueue(ctx context.Context, evt core.Event) error {
 	select {
-	case <-bt.ctx.Done():
-		return bt.ctx.Err()
 	case <-ctx.Done():
 		return ctx.Err()
 	case bt.events <- evt:

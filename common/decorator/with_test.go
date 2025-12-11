@@ -7,23 +7,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jbcpollak/greenstalk"
-	"github.com/jbcpollak/greenstalk/common/action"
-	"github.com/jbcpollak/greenstalk/common/composite"
-	"github.com/jbcpollak/greenstalk/core"
-	"github.com/jbcpollak/greenstalk/internal"
-	"github.com/jbcpollak/greenstalk/util"
+	"github.com/jbcpollak/greenstalk/v2"
+	"github.com/jbcpollak/greenstalk/v2/common/action"
+	"github.com/jbcpollak/greenstalk/v2/common/composite"
+	"github.com/jbcpollak/greenstalk/v2/core"
+	"github.com/jbcpollak/greenstalk/v2/internal"
+	"github.com/jbcpollak/greenstalk/v2/util"
 )
 
 func TestWith(t *testing.T) {
 	var wg sync.WaitGroup
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	sigChan := make(chan bool)
 
 	childCalled := false
-	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+	child := action.FunctionAction(action.FunctionActionParams{
 		Func: func() core.ResultDetails {
 			childCalled = true
 			return core.SuccessResult()
@@ -31,46 +32,41 @@ func TestWith(t *testing.T) {
 	})
 
 	closeCalled := false
-	closeFn := func() error {
+	closeFn := func(context.Context) error {
 		closeCalled = true
 		return nil
 	}
-	with := With(func() (func() error, error) {
+	with := With(func(context.Context) (func(context.Context) error, error) {
 		return closeFn, nil
 	}, child)
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		with,
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	wg.Add(1)
-	go func() {
-		err := tree.EventLoop(evt)
+	wg.Go(func() {
+		err := tree.EventLoop(ctx, evt)
 		if err != nil {
 			t.Errorf("Unexpectedly got %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -81,8 +77,7 @@ func TestWith(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusSuccess {
+	if status := testSequence.Result().Status(); status != core.StatusSuccess {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
@@ -98,12 +93,13 @@ func TestWith(t *testing.T) {
 func TestWithCloserError(t *testing.T) {
 	var wg sync.WaitGroup
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	sigChan := make(chan bool)
 
 	childCalled := false
-	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+	child := action.FunctionAction(action.FunctionActionParams{
 		Func: func() core.ResultDetails {
 			childCalled = true
 			return core.SuccessResult()
@@ -111,47 +107,42 @@ func TestWithCloserError(t *testing.T) {
 	})
 
 	closeCalled := false
-	closeFn := func() error {
+	closeFn := func(context.Context) error {
 		closeCalled = true
 		return fmt.Errorf("This is an expected error")
 	}
 
-	with := With(func() (func() error, error) {
+	with := With(func(context.Context) (func(context.Context) error, error) {
 		return closeFn, nil
 	}, child)
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		with,
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
 		t.Errorf("Unexpectedly got %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	wg.Add(1)
-	go func() {
-		err := tree.EventLoop(evt)
+	wg.Go(func() {
+		err := tree.EventLoop(ctx, evt)
 		if err == nil {
 			t.Errorf("We are expecting an error here")
 		}
-		wg.Done()
-	}()
+	})
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -162,8 +153,7 @@ func TestWithCloserError(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusError {
+	if status := testSequence.Result().Status(); status != core.StatusError {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
@@ -179,12 +169,13 @@ func TestWithCloserError(t *testing.T) {
 func TestWithInitError(t *testing.T) {
 	var wg sync.WaitGroup
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
 
 	sigChan := make(chan bool)
 
 	childCalled := false
-	child := action.FunctionAction[core.EmptyBlackboard](action.FunctionActionParams{
+	child := action.FunctionAction(action.FunctionActionParams{
 		Func: func() core.ResultDetails {
 			childCalled = true
 			return core.SuccessResult()
@@ -193,42 +184,39 @@ func TestWithInitError(t *testing.T) {
 
 	closeCalled := false
 
-	with := With(func() (func() error, error) {
+	with := With(func(context.Context) (func(context.Context) error, error) {
 		return nil, fmt.Errorf("This is an error")
 	}, child)
 
 	params := action.SignallerParams[bool]{
 		BaseParams: "Signaller",
-
-		Channel: sigChan,
-		Signal:  true,
+		Channel:    sigChan,
+		Signal:     true,
 	}
-	signaller := action.Signaller[core.EmptyBlackboard](params)
+	signaller := action.Signaller(params)
 
-	var testSequence = composite.Sequence(
+	testSequence := composite.Sequence(
 		with,
 		signaller,
 	)
 
 	tree, err := greenstalk.NewBehaviorTree(
 		testSequence,
-		core.EmptyBlackboard{},
-		greenstalk.WithContext[core.EmptyBlackboard](ctx),
-		greenstalk.WithVisitors(util.PrintTreeInColor[core.EmptyBlackboard]),
+		greenstalk.WithVisitors(util.PrintTreeInColor),
 	)
 	if err != nil {
-		t.Errorf("Should net error here %v", err)
+		t.Errorf("Should not error here %v", err)
 	}
 
 	evt := core.DefaultEvent{}
-	wg.Add(1)
-	go func() {
-		err = tree.EventLoop(evt)
-		if err.Error() != "This is an error" {
+	wg.Go(func() {
+		err = tree.EventLoop(ctx, evt)
+		if err == nil {
+			t.Error("Should have errored here")
+		} else if err.Error() != "This is an error" {
 			t.Errorf("Error does not have correct contents: %v", err)
 		}
-		wg.Done()
-	}()
+	})
 
 	d := time.Duration(100) * time.Millisecond
 
@@ -239,8 +227,7 @@ func TestWithInitError(t *testing.T) {
 
 	cancel()
 	wg.Wait()
-	status := tree.Root.Result().Status()
-	if status != core.StatusError {
+	if status := testSequence.Result().Status(); status != core.StatusError {
 		t.Errorf("Unexpectedly got %v", status)
 	}
 
