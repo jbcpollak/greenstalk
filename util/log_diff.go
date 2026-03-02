@@ -34,7 +34,7 @@ func (d *diffingTreeLogger) LogTree(node core.Walkable) {
 		status := node.Result().Status()
 		symbol := symbolForStatus[status]
 
-		treeStringBuilder.WriteString(fmt.Sprintf("%s%s %s\n", indent, node.String(), symbol))
+		fmt.Fprintf(&treeStringBuilder, "%s%s %s\n", indent, node.String(), symbol)
 	}
 
 	node.Walk(printToBuilder, 0)
