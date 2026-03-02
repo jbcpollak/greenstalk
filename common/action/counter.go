@@ -32,7 +32,7 @@ func (a *counter) Activate(ctx context.Context, evt core.Event) core.ResultDetai
 }
 
 func (a *counter) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
-	internal.Logger.Info("Incrementing count", "name", a.Name())
+	internal.Logger.DebugContext(ctx, "Incrementing count", "name", a.Name())
 	a.currentValue++
 	a.Params.CountChan <- a.currentValue
 

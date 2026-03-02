@@ -29,8 +29,8 @@ type repeatUntil struct {
 	core.Decorator[RepeatUntilParams]
 }
 
-func (d *repeatUntil) repeat(_ context.Context, enqueue core.EnqueueFn) error {
-	internal.Logger.Info("Repeating", "name", d.Name())
+func (d *repeatUntil) repeat(ctx context.Context, enqueue core.EnqueueFn) error {
+	internal.Logger.DebugContext(ctx, "Repeating", "name", d.Name())
 	return enqueue(core.TargetNodeEvent(d.Id()))
 }
 
@@ -39,7 +39,7 @@ func (d *repeatUntil) Activate(ctx context.Context, evt core.Event) core.ResultD
 }
 
 func (d *repeatUntil) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
-	internal.Logger.Info("Repeater: Calling child")
+	internal.Logger.DebugContext(ctx, "Repeater: Calling child")
 	result := core.Update(ctx, d.Child, evt)
 	status := result.Status()
 

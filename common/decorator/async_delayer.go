@@ -50,7 +50,7 @@ func (d *asyncdelayer) doDelay(ctx context.Context, enqueue core.EnqueueFn) erro
 	case <-ctx.Done():
 		return fmt.Errorf("async delay interrupted: %w", ctx.Err())
 	case <-t.C:
-		internal.Logger.Info("Delay Duration", "duration", time.Since(d.start))
+		internal.Logger.DebugContext(ctx, "Delay Duration", "duration", time.Since(d.start))
 		return enqueue(DelayerFinishedEvent{d.Id(), d.start})
 	}
 }
@@ -59,18 +59,18 @@ func (d *asyncdelayer) doDelay(ctx context.Context, enqueue core.EnqueueFn) erro
 func (d *asyncdelayer) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	d.start = time.Now()
 
-	internal.Logger.Info("Returning AsyncRunning", "name", d.Name())
+	internal.Logger.DebugContext(ctx, "Returning AsyncRunning", "name", d.Name())
 
 	return core.InitRunningResult(d.doDelay)
 }
 
 // Tick ...
 func (d *asyncdelayer) Tick(ctx context.Context, evt core.Event) core.ResultDetails {
-	internal.Logger.Info("Tick", "name", d.Name())
+	internal.Logger.DebugContext(ctx, "Tick", "name", d.Name())
 
 	if dfe, ok := evt.(DelayerFinishedEvent); ok {
 		if dfe.TargetNodeId() == d.Id() {
-			internal.Logger.Info("DelayerFinishedEvent", "name", d.Name())
+			internal.Logger.DebugContext(ctx, "DelayerFinishedEvent", "name", d.Name())
 			return core.Update(ctx, d.Child, evt)
 		}
 	}
