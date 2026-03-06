@@ -1,6 +1,7 @@
 package condition
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"maps"
@@ -9,21 +10,25 @@ import (
 	"github.com/jbcpollak/greenstalk/v2/core"
 )
 
-type SwitchFunc[T comparable] func() T
+type SwitchFunc[T cmp.Ordered] func() T
 
 // SwitchMap activates the child at the map key returned by the switch function.
 // Note that an If node is a rudimentary form of a SwitchMap node with two children
 // and the function returning 0 / 1 for true / false.
-func SwitchMapNamed[T comparable](name string, switchFunc SwitchFunc[T], children map[T]core.Node) core.Node {
-	base := core.NewComposite(core.BaseParams(name), slices.Collect(maps.Values(children)))
+func SwitchMapNamed[T cmp.Ordered](name string, switchFunc SwitchFunc[T], children map[T]core.Node) core.Node {
+	var childrenInOrder []core.Node
+	for _, mapKey := range slices.Sorted(maps.Keys(children)) {
+		childrenInOrder = append(childrenInOrder, children[mapKey])
+	}
+	base := core.NewComposite(core.BaseParams(name), childrenInOrder)
 	return &switchMapNode[T]{Composite: base, switchFunc: switchFunc, children: children}
 }
 
-func SwitchMap[T comparable](switchFunc SwitchFunc[T], children map[T]core.Node) core.Node {
+func SwitchMap[T cmp.Ordered](switchFunc SwitchFunc[T], children map[T]core.Node) core.Node {
 	return SwitchMapNamed("SwitchMap", switchFunc, children)
 }
 
-type switchMapNode[T comparable] struct {
+type switchMapNode[T cmp.Ordered] struct {
 	core.Composite[core.BaseParams]
 	switchFunc      SwitchFunc[T]
 	children        map[T]core.Node
@@ -50,4 +55,4 @@ func (s *switchMapNode[T]) Leave(context.Context) error {
 	return nil
 }
 
-var _ core.Node = (*switchMapNode[any])(nil)
+var _ core.Node = (*switchMapNode[int])(nil)
