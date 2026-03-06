@@ -14,7 +14,7 @@ func WithAsyncNamed(
 	child core.Node,
 ) core.Node {
 	enterNode := action.AsyncFunctionAction(action.AsyncFunctionActionParams{
-		BaseParams: core.BaseParams(name + "_enter"),
+		BaseParams: core.BaseParams("enter"),
 		Func: func(ctx context.Context) core.ResultDetails {
 			err := enterFunc(ctx)
 			if err != nil {
@@ -25,7 +25,7 @@ func WithAsyncNamed(
 	})
 
 	exitNode := action.AsyncFunctionAction(action.AsyncFunctionActionParams{
-		BaseParams: core.BaseParams(name + "_exit"),
+		BaseParams: core.BaseParams("exit"),
 		Func: func(ctx context.Context) core.ResultDetails {
 			err := exitFunc(ctx)
 			if err != nil {
@@ -48,7 +48,7 @@ func WithAsync(
 	return WithAsyncNamed("WithAsync", enterFunc, exitFunc, child)
 }
 
-// private composite node for AsyncWith that has exacty 3 children, executes them in order and then
+// private composite node for AsyncWith that has exactly 3 children, executes them in order and then
 // returns the status of the second child
 type asyncWithSequence struct {
 	core.Composite[core.BaseParams]
