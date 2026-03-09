@@ -8,16 +8,15 @@ import (
 // Note that an If node is a rudimentary form of a Switch node with two children
 // and the function returning 0 / 1 for true / false.
 func SwitchNamed(name string, switchFunc SwitchFunc[int], children ...core.Node) core.Node {
-	base := core.NewComposite(core.BaseParams(name), children)
 	childrenMap := map[int]core.Node{}
 	for i, child := range children {
 		childrenMap[i] = child
 	}
-	return &switchMapNode[int]{
-		Composite:  base,
-		switchFunc: switchFunc,
-		children:   childrenMap,
-	}
+	return SwitchMapNamed(
+		name,
+		switchFunc,
+		childrenMap,
+	)
 }
 
 func Switch(switchFunc SwitchFunc[int], children ...core.Node) core.Node {
