@@ -16,13 +16,12 @@ type SwitchFunc[T cmp.Ordered] func() T
 // Note that an If node is a rudimentary form of a SwitchMap node with two children
 // and the function returning 0 / 1 for true / false.
 func SwitchMapNamed[T cmp.Ordered](name string, switchFunc SwitchFunc[T], children map[T]core.Node) core.Node {
-	var keysInOrder []T
+	keysInOrder := slices.Sorted(maps.Keys(children))
 	var childrenInOrder []core.Node
-	for _, mapKey := range slices.Sorted(maps.Keys(children)) {
-		keysInOrder = append(keysInOrder, mapKey)
+	for _, mapKey := range keysInOrder {
 		childrenInOrder = append(childrenInOrder, children[mapKey])
 	}
-	childrenIndices := map[T]int{}
+	childrenIndices := make(map[T]int, len(keysInOrder))
 	for i, key := range keysInOrder {
 		childrenIndices[key] = i
 	}
