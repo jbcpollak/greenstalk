@@ -42,7 +42,7 @@ type switchMapNode[T cmp.Ordered] struct {
 func (i *switchMapNode[T]) Activate(ctx context.Context, evt core.Event) core.ResultDetails {
 	switchKey := i.switchFunc()
 	if idx, ok := i.childrenIndices[switchKey]; !ok {
-		return core.ErrorResult(fmt.Errorf("Switch key does not exist: %v", switchKey))
+		return core.ErrorResult(fmt.Errorf("switch key does not exist: %v", switchKey))
 	} else {
 		i.CurrentChild = idx
 	}
