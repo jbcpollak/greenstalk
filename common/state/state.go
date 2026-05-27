@@ -62,3 +62,23 @@ var (
 	_ State[int] = (*StateProvider[int])(nil)
 	_ State[int] = (*SynchronizedStateProvider[int])(nil)
 )
+
+type stateView[T any, V any] struct {
+	stateGetter StateGetter[T]
+	viewFunc    func(T) V
+}
+
+func (s *stateView[T, V]) Get() V {
+	return s.viewFunc(s.stateGetter.Get())
+}
+
+// Creates a StateGetter that converts the value of the original getter into a different type, and returns that new value on Get()
+func MakeStateView[T any, V any](
+	stateGetter StateGetter[T],
+	viewFunc func(T) V,
+) StateGetter[V] {
+	return &stateView[T, V]{
+		stateGetter: stateGetter,
+		viewFunc:    viewFunc,
+	}
+}
