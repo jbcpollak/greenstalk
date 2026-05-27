@@ -73,7 +73,7 @@ func (s *stateViewGetter[T, V]) Get() V {
 }
 
 // Creates a StateGetter that converts the value of the original getter into a different type, and returns that new value on Get()
-func MakeStateViewGetter[T any, V any](
+func MakeStateView[T any, V any](
 	stateGetter StateGetter[T],
 	viewFunc func(T) V,
 ) StateGetter[V] {
