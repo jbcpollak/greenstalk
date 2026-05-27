@@ -63,12 +63,12 @@ var (
 	_ State[int] = (*SynchronizedStateProvider[int])(nil)
 )
 
-type stateViewGetter[T any, V any] struct {
+type stateView[T any, V any] struct {
 	stateGetter StateGetter[T]
 	viewFunc    func(T) V
 }
 
-func (s *stateViewGetter[T, V]) Get() V {
+func (s *stateView[T, V]) Get() V {
 	return s.viewFunc(s.stateGetter.Get())
 }
 
@@ -77,7 +77,7 @@ func MakeStateView[T any, V any](
 	stateGetter StateGetter[T],
 	viewFunc func(T) V,
 ) StateGetter[V] {
-	return &stateViewGetter[T, V]{
+	return &stateView[T, V]{
 		stateGetter: stateGetter,
 		viewFunc:    viewFunc,
 	}
