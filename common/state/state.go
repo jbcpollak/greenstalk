@@ -91,7 +91,13 @@ type AtomicStateProvider[T any] struct {
 }
 
 func (p *AtomicStateProvider[T]) Get() T {
-	return *p.value.Load()
+	loadVal := p.value.Load()
+	if loadVal == nil {
+		var zeroValue T
+		return zeroValue
+	} else {
+		return *loadVal
+	}
 }
 
 func (p *AtomicStateProvider[T]) Set(val T) {
