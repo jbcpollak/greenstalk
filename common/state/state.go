@@ -1,6 +1,9 @@
 package state
 
-import "sync"
+import (
+	"sync"
+	"sync/atomic"
+)
 
 type StateGetter[T any] interface {
 	Get() T
@@ -81,4 +84,21 @@ func MakeStateView[T any, V any](
 		stateGetter: stateGetter,
 		viewFunc:    viewFunc,
 	}
+}
+
+type AtomicStateProvider[T any] struct {
+	value atomic.Pointer[T]
+}
+
+func (p *AtomicStateProvider[T]) Get() T {
+	return *p.value.Load()
+}
+
+func (p *AtomicStateProvider[T]) Set(val T) {
+	p.value.Store(&val)
+}
+
+func (p *AtomicStateProvider[T]) Reset() {
+	var zeroValue T
+	p.value.Store(&zeroValue)
 }
